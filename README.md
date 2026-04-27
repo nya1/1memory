@@ -4,7 +4,7 @@ A local memory layer for coding agents.
 
 JustMemory runs as an MCP server on your machine. Agents can write down what matters, recall it later, and carry useful context across sessions without a hosted service. Semantic recall uses vector search with a local ONNX embedding model (`paraphrase-MiniLM-L3-v2`) published on npm with the package, so it is always available offline.
 
-**Synthetic recall benchmark (local):** ~83% recall@1, ~100% recall@8, MRR ~0.90 on a representative run — `pnpm run benchmark:retrieval` to reproduce; sample output under **Development**.
+**Synthetic recall benchmark:** ~83% recall@1
 
 It is built for local-first agent work:
 
