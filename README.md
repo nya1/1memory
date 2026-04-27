@@ -88,23 +88,10 @@ Add JustMemory to an MCP client:
 }
 ```
 
-Or start the MCP server directly:
+For a terminal UI to browse and search local memories:
 
 ```bash
-npx -y justmemory mcp
-```
-
-If installed globally:
-
-```json
-{
-  "mcpServers": {
-    "justmemory": {
-      "command": "justmemory",
-      "args": ["mcp"]
-    }
-  }
-}
+npx -y justmemory explore
 ```
 
 ## Client Install
