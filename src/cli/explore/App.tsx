@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Box, Text, useApp, useInput, useStdout } from "ink";
 import TextInput from "ink-text-input";
 import type { MemoryRecord, ProfileRecord } from "../../core/types.js";
@@ -19,7 +19,7 @@ const LIST_LIMIT = 16;
 
 const MENU = [
   { id: "browse" as const, label: "Browse memories", hint: "↑↓ pick row · Enter open · n more" },
-  { id: "search" as const, label: "Search", hint: "Tab field ↔ results · Enter run query" },
+  { id: "search" as const, label: "Search", hint: "Esc — menu · Tab — query ↔ hits · Enter run" },
   { id: "viewId" as const, label: "View by ID", hint: "Enter after pasting mem_…" },
   { id: "profiles" as const, label: "Switch profile", hint: "↑↓ · Enter apply" },
   { id: "quit" as const, label: "Quit", hint: "q or Enter here" }
@@ -49,7 +49,7 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
   const termCols = stdout.columns ?? 80;
 
   const embedSkipped = process.env.JUSTMEMORY_SKIP_EMBEDDINGS === "1";
-  const embedBundledPresent = isBundledEmbeddingModelPresent();
+  const [embedBundledPresent] = useState(() => isBundledEmbeddingModelPresent());
   const [embedPipeline, setEmbedPipeline] = useState<"idle" | "loading" | "ok" | "fail">(() => {
     if (process.env.JUSTMEMORY_SKIP_EMBEDDINGS === "1") return "idle";
     if (!isBundledEmbeddingModelPresent()) return "idle";
@@ -58,6 +58,11 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
 
   const [profileId, setProfileId] = useState(props.initialProfileId);
   const [profileName, setProfileName] = useState(props.initialProfileName);
+  const profileIdRef = useRef(profileId);
+  profileIdRef.current = profileId;
+
+  const [activeProfile, setActiveProfile] = useState<ProfileRecord | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [menuIndex, setMenuIndex] = useState(0);
   const [focus, setFocus] = useState<"sidebar" | "body">("sidebar");
 
@@ -82,6 +87,25 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
 
   const [detail, setDetail] = useState<MemoryRecord | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const p = await resolveProfile({ profile_id: profileId, workspace: props.workspaceDir });
+        if (!cancelled) setActiveProfile(p);
+      } catch {
+        if (!cancelled) setActiveProfile(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [profileId, props.workspaceDir]);
+
+  useEffect(() => {
+    setActionError(null);
+  }, [menuIndex]);
+
   const sidebarWidth = Math.min(28, Math.max(22, Math.floor(termCols * 0.32)));
   const contentWidth = Math.max(40, termCols - sidebarWidth - 4);
   const listViewport = Math.max(6, Math.min(LIST_LIMIT, termRows - 14));
@@ -89,10 +113,11 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
   useEffect(() => {
     if (menuIndex !== 0) return;
     let cancelled = false;
+    const pid = profileId;
     void (async () => {
       setListLoading(true);
       try {
-        const page = await listMemoriesPage(profileId, {
+        const page = await listMemoriesPage(pid, {
           limit: LIST_LIMIT,
           offset: 0,
           label: undefined,
@@ -100,12 +125,17 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
           memory_type: undefined,
           status: undefined
         });
-        if (cancelled) return;
+        if (cancelled || profileIdRef.current !== pid) return;
         setMemories(page.records);
         setListNextCursor(page.next_cursor);
         setMemIndex(0);
+        setActionError(null);
+      } catch (e) {
+        if (!cancelled && profileIdRef.current === pid) {
+          setActionError(e instanceof Error ? e.message : String(e));
+        }
       } finally {
-        if (!cancelled) setListLoading(false);
+        if (!cancelled && profileIdRef.current === pid) setListLoading(false);
       }
     })();
     return () => {
@@ -145,6 +175,9 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
         setProfiles(list);
         const i = list.findIndex((p) => p.profile_id === profileId);
         setProfilePickIndex(i >= 0 ? i : 0);
+        setActionError(null);
+      } catch (e) {
+        if (!cancelled) setActionError(e instanceof Error ? e.message : String(e));
       } finally {
         if (!cancelled) setProfilesLoading(false);
       }
@@ -156,60 +189,113 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
 
   const appendNextPage = useCallback(async () => {
     if (!listNextCursor) return;
+    const pid = profileIdRef.current;
+    const cursor = listNextCursor;
     setListLoading(true);
     try {
-      const page = await listMemoriesPage(profileId, {
+      const page = await listMemoriesPage(pid, {
         limit: LIST_LIMIT,
-        offset: decodeListCursor(listNextCursor),
+        offset: decodeListCursor(cursor),
         label: undefined,
         namespace: undefined,
         memory_type: undefined,
         status: undefined
       });
+      if (profileIdRef.current !== pid) return;
       setMemories((prev) => [...prev, ...page.records]);
       setListNextCursor(page.next_cursor);
+      setActionError(null);
+    } catch (e) {
+      if (profileIdRef.current === pid) {
+        setActionError(e instanceof Error ? e.message : String(e));
+      }
     } finally {
-      setListLoading(false);
+      if (profileIdRef.current === pid) setListLoading(false);
     }
-  }, [listNextCursor, profileId]);
+  }, [listNextCursor]);
 
   const openMemoryDetail = useCallback(async (memoryId: string) => {
     try {
       const [rec] = await getMemories([memoryId]);
       setDetail(rec);
+      setActionError(null);
     } catch {
-      setViewMessage(`Not found: ${memoryId}`);
+      setActionError(`Could not open memory: ${memoryId} (not found or inaccessible).`);
     }
   }, []);
 
   const runSearch = useCallback(async () => {
     const q = searchQuery.trim();
     if (!q) return;
+    const pid = profileIdRef.current;
     setSearchLoading(true);
     setSearchResults(null);
     try {
-      const profile = await resolveProfile({ profile_id: profileId, workspace: props.workspaceDir });
+      const profile =
+        activeProfile?.profile_id === pid
+          ? activeProfile
+          : await resolveProfile({ profile_id: pid, workspace: props.workspaceDir });
+      if (profileIdRef.current !== pid) return;
       const result = await recallMemory(profile, q, 14);
+      if (profileIdRef.current !== pid) return;
       setSearchResults(result);
       setResultIndex(0);
       setSearchInputFocused(false);
+      setActionError(null);
+    } catch (e) {
+      if (profileIdRef.current === pid) {
+        setActionError(e instanceof Error ? e.message : String(e));
+      }
     } finally {
-      setSearchLoading(false);
+      if (profileIdRef.current === pid) setSearchLoading(false);
     }
-  }, [profileId, props.workspaceDir, searchQuery]);
+  }, [activeProfile, props.workspaceDir, searchQuery]);
 
   const applyProfile = useCallback(async () => {
     const p = profiles[profilePickIndex];
     if (!p) return;
-    await selectProfile({ profile_id: p.profile_id, workspace: props.workspaceDir });
-    setProfileId(p.profile_id);
-    setProfileName(p.name);
-    setMenuIndex(0);
-    setFocus("sidebar");
+    try {
+      await selectProfile({ profile_id: p.profile_id, workspace: props.workspaceDir });
+      setProfileId(p.profile_id);
+      setProfileName(p.name);
+      setMenuIndex(0);
+      setFocus("sidebar");
+      setActionError(null);
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : String(e));
+    }
   }, [profiles, profilePickIndex, props.workspaceDir]);
 
   const textInputStealsKeys =
     (menuIndex === 1 && focus === "body" && searchInputFocused) || (menuIndex === 2 && focus === "body");
+
+  /** Escape / Tab while TextInput owns keys; Escape+q when detail opened from View by ID (sidebar keys off). */
+  useInput(
+    (input, key) => {
+      if (detail) {
+        if (key.escape || input === "q") setDetail(null);
+        return;
+      }
+      if (textInputStealsKeys) {
+        if (key.escape) {
+          setFocus("sidebar");
+          setSearchInputFocused(true);
+          setActionError(null);
+          return;
+        }
+        if (
+          key.tab &&
+          menuIndex === 1 &&
+          focus === "body" &&
+          searchResults &&
+          searchResults.citations.length > 0
+        ) {
+          setSearchInputFocused((f) => !f);
+        }
+      }
+    },
+    { isActive: Boolean(detail) || textInputStealsKeys }
+  );
 
   useInput(
     (input, key) => {
@@ -227,6 +313,7 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
         if (focus === "body") {
           setFocus("sidebar");
           setSearchInputFocused(true);
+          setActionError(null);
         }
         return;
       }
@@ -403,6 +490,12 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
     </Box>
   );
 
+  const errorBanner = actionError ? (
+    <Box borderStyle="round" borderColor={theme.error} paddingX={1} marginBottom={1}>
+      <Text color={theme.error}>{truncate(actionError, Math.max(20, termCols - 4))}</Text>
+    </Box>
+  ) : null;
+
   const sidebar = (
     <Box
       width={sidebarWidth}
@@ -508,7 +601,7 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
                 const picked = i === resultIndex && !searchInputFocused && focus === "body";
                 const preview = clipPreview(c.content, contentWidth - 6);
                 return (
-                  <Text key={`${c.memory_id}-${i}`} inverse={picked}>
+                  <Text key={c.memory_id} inverse={picked}>
                     {c.memory_id} [{c.memory_type}] {preview}
                   </Text>
                 );
@@ -546,8 +639,9 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
                 try {
                   const [rec] = await getMemories([id]);
                   setDetail(rec);
-                } catch {
-                  setViewMessage("Not found.");
+                  setActionError(null);
+                } catch (e) {
+                  setViewMessage(e instanceof Error ? e.message : "Not found.");
                 } finally {
                   setViewBusy(false);
                 }
@@ -642,6 +736,7 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
       {!detail ? (
         <>
           {header}
+          {errorBanner}
           <Box flexDirection="row">
             {sidebar}
             <Box marginLeft={1} flexGrow={1} flexDirection="column" minWidth={0}>
