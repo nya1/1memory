@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { readConfig, workspaceKey, writeConfig } from "../config/config-store.js";
-import { resolveJustMemoryPaths } from "../config/paths.js";
-import { JustMemoryError } from "../core/errors.js";
+import { resolveOneMemoryPaths } from "../config/paths.js";
+import { OneMemoryError } from "../core/errors.js";
 import { ProfileRecord } from "../core/types.js";
 import { PROFILES_TABLE, openLocalDatabase } from "../storage/lancedb.js";
 import { assertStoreWritesAllowed } from "../storage/migrations-runner.js";
@@ -81,7 +81,7 @@ export async function listProfiles(): Promise<ProfileRecord[]> {
       const table = await db.openTable(PROFILES_TABLE);
       await table.add([profileToRow(profile)]);
 
-      const paths = resolveJustMemoryPaths();
+      const paths = resolveOneMemoryPaths();
       const config = await readConfig(paths);
       config.default_profile_id = profile.profile_id;
       await writeConfig(paths, config);
@@ -103,12 +103,12 @@ export async function resolveProfile(input: {
   if (input.profile_id) {
     const profile = profiles.get(input.profile_id);
     if (!profile) {
-      throw new JustMemoryError("profile_not_found", "Profile does not exist.", "Choose an existing profile.");
+      throw new OneMemoryError("profile_not_found", "Profile does not exist.", "Choose an existing profile.");
     }
     return profile;
   }
 
-  const paths = resolveJustMemoryPaths();
+  const paths = resolveOneMemoryPaths();
   const config = await readConfig(paths);
   const key = workspaceKey(input.workspace, input.repo);
   const selected = config.selected_profiles[key];
@@ -162,7 +162,7 @@ export async function selectProfile(input: {
 }): Promise<ProfileRecord> {
   const profile = await resolveProfile({ profile_id: input.profile_id });
   assertStoreWritesAllowed();
-  const paths = resolveJustMemoryPaths();
+  const paths = resolveOneMemoryPaths();
   await withDbWriteLock(async () => {
     const config = await readConfig(paths);
     config.selected_profiles[workspaceKey(input.workspace, input.repo)] = profile.profile_id;

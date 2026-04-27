@@ -11,7 +11,7 @@
         { "content": "When editing the installer, run MCP integration tests before claiming done.", "memory_type": "instruction" },
         { "content": "The replay job stores offsets in LanceDB under the memories table.", "memory_type": "fact" },
         { "content": "Provider retries are capped at three attempts with exponential backoff.", "memory_type": "fact" },
-        { "content": "The staging cluster uses a separate JUSTMEMORY_HOME for dogfood runs.", "memory_type": "fact" },
+        { "content": "The staging cluster uses a separate ONEMEMORY_HOME for dogfood runs.", "memory_type": "fact" },
         {
           "content": "The retry bug only reproduces when provider retries overlap with the replay job.",
           "memory_type": "fact"
@@ -33,7 +33,7 @@
         { "content": "Claude Desktop expects JSON-RPC over stdio for MCP servers.", "memory_type": "fact" },
         { "content": "Workspace-scoped install writes under .cursor when requested.", "memory_type": "fact" },
         {
-          "content": "Use MCP stdio for local JustMemory clients; avoid background daemons.",
+          "content": "Use MCP stdio for local 1memory clients; avoid background daemons.",
           "memory_type": "instruction"
         },
         { "content": "The CLI entrypoint is dist/cli.js after build.", "memory_type": "fact" },
@@ -41,7 +41,7 @@
         { "content": "Audit events record memory_recall with candidate counts.", "memory_type": "fact" }
       ],
       "queries": [
-        "How should editors talk to JustMemory on this machine?",
+        "How should editors talk to 1memory on this machine?",
         "stdio versus HTTP for the memory MCP server",
         "local agent connection transport preference"
       ]

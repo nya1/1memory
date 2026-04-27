@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the first working local JustMemory loop: an MCP client can connect with `npx justmemory mcp`, create or resolve a local profile, save a memory, read it by ID, and recall it from local LanceDB storage.
+**Goal:** Build the first working local 1memory loop: an MCP client can connect with `npx 1memory mcp`, create or resolve a local profile, save a memory, read it by ID, and recall it from local LanceDB storage.
 
 **Implementation status (2026-04-26):** Complete in the local TypeScript package. The implementation includes the package scaffold, CLI, MCP stdio server, standard envelopes, local config paths, LanceDB-backed profiles and memories, lexical/metadata recall, unit tests, integration tests, and restart-style persistence coverage. Verified with `npm run build`, `npm test`, and `npm run typecheck`.
 
@@ -47,7 +47,7 @@ Deferred until Alpha Slice 2:
 The milestone is intentionally simple:
 
 ```text
-Cursor or another MCP client starts JustMemory -> calls capabilities/health -> saves a local memory -> fetches it by ID -> recalls it later from LanceDB.
+Cursor or another MCP client starts 1memory -> calls capabilities/health -> saves a local memory -> fetches it by ID -> recalls it later from LanceDB.
 ```
 
 ---
@@ -59,13 +59,13 @@ Create these files:
 - `package.json`: package metadata, bin entry, scripts, runtime dependencies, dev dependencies.
 - `tsconfig.json`: TypeScript compiler config for ESM Node output.
 - `vitest.config.ts`: test runner config.
-- `src/cli.ts`: command entrypoint for `justmemory`; dispatches to `mcp`.
+- `src/cli.ts`: command entrypoint for `1memory`; dispatches to `mcp`.
 - `src/mcp/server.ts`: constructs MCP server, registers tools, connects stdio transport.
 - `src/mcp/tools.ts`: tool definitions and handlers.
 - `src/core/envelope.ts`: standard response envelope helpers and request IDs.
 - `src/core/errors.ts`: stable error codes and error response helpers.
 - `src/core/types.ts`: shared domain types.
-- `src/config/paths.ts`: resolves `~/.justmemory` or test override directory.
+- `src/config/paths.ts`: resolves `~/.1memory` or test override directory.
 - `src/config/config-store.ts`: reads/writes `config.json`.
 - `src/storage/lancedb.ts`: opens LanceDB and runs startup migrations.
 - `src/storage/lancedb-schema.ts`: shared table names and `tableExists` helper.
@@ -104,12 +104,12 @@ Use this starting package definition:
 
 ```json
 {
-  "name": "justmemory",
+  "name": "1memory",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "bin": {
-    "justmemory": "./dist/cli.js"
+    "1memory": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -297,7 +297,7 @@ export type ErrorCode =
   | "schema_unsupported"
   | "backend_degraded";
 
-export class JustMemoryError extends Error {
+export class OneMemoryError extends Error {
   constructor(
     public readonly code: ErrorCode,
     message: string,
@@ -305,7 +305,7 @@ export class JustMemoryError extends Error {
     public readonly details: Record<string, unknown> = {}
   ) {
     super(message);
-    this.name = "JustMemoryError";
+    this.name = "OneMemoryError";
   }
 }
 ```
@@ -316,7 +316,7 @@ Create `src/core/envelope.ts`:
 
 ```ts
 import { nanoid } from "nanoid";
-import { JustMemoryError } from "./errors.js";
+import { OneMemoryError } from "./errors.js";
 import { SCHEMA_VERSION, Scope } from "./types.js";
 
 export interface SuccessEnvelope<T> {
@@ -375,7 +375,7 @@ export function success<T>(
 }
 
 export function failure(error: unknown, requestId = newRequestId()): FailureEnvelope {
-  if (error instanceof JustMemoryError) {
+  if (error instanceof OneMemoryError) {
     return {
       ok: false,
       request_id: requestId,
@@ -397,7 +397,7 @@ export function failure(error: unknown, requestId = newRequestId()): FailureEnve
     error: {
       code: "backend_degraded",
       message: error instanceof Error ? error.message : "Unexpected local backend error.",
-      action: "Inspect local JustMemory logs and retry the request."
+      action: "Inspect local 1memory logs and retry the request."
     },
     warnings: []
   };
@@ -411,7 +411,7 @@ Create `tests/unit/envelope.test.ts`:
 ```ts
 import { describe, expect, it } from "vitest";
 import { failure, success } from "../../src/core/envelope.js";
-import { JustMemoryError } from "../../src/core/errors.js";
+import { OneMemoryError } from "../../src/core/errors.js";
 
 describe("response envelopes", () => {
   it("creates successful envelopes with schema and request id", () => {
@@ -426,7 +426,7 @@ describe("response envelopes", () => {
 
   it("maps known errors into stable failure envelopes", () => {
     const envelope = failure(
-      new JustMemoryError("profile_not_found", "Profile does not exist.", "Choose another profile.")
+      new OneMemoryError("profile_not_found", "Profile does not exist.", "Choose another profile.")
     );
 
     expect(envelope.ok).toBe(false);
@@ -464,7 +464,7 @@ Create `src/config/paths.ts`:
 import os from "node:os";
 import path from "node:path";
 
-export interface JustMemoryPaths {
+export interface OneMemoryPaths {
   rootDir: string;
   configPath: string;
   lancedbDir: string;
@@ -472,8 +472,8 @@ export interface JustMemoryPaths {
   exportsDir: string;
 }
 
-export function resolveJustMemoryPaths(): JustMemoryPaths {
-  const rootDir = process.env.JUSTMEMORY_HOME ?? path.join(os.homedir(), ".justmemory");
+export function resolveOneMemoryPaths(): OneMemoryPaths {
+  const rootDir = process.env.ONEMEMORY_HOME ?? path.join(os.homedir(), ".1memory");
 
   return {
     rootDir,
@@ -492,7 +492,7 @@ Create `src/config/config-store.ts`:
 ```ts
 import fs from "node:fs/promises";
 import path from "node:path";
-import { JustMemoryPaths } from "./paths.js";
+import { OneMemoryPaths } from "./paths.js";
 
 export interface LocalConfig {
   default_profile_id?: string;
@@ -505,14 +505,14 @@ function now(): string {
   return new Date().toISOString();
 }
 
-export async function ensureLocalDirs(paths: JustMemoryPaths): Promise<void> {
+export async function ensureLocalDirs(paths: OneMemoryPaths): Promise<void> {
   await fs.mkdir(paths.rootDir, { recursive: true });
   await fs.mkdir(paths.lancedbDir, { recursive: true });
   await fs.mkdir(paths.logsDir, { recursive: true });
   await fs.mkdir(paths.exportsDir, { recursive: true });
 }
 
-export async function readConfig(paths: JustMemoryPaths): Promise<LocalConfig> {
+export async function readConfig(paths: OneMemoryPaths): Promise<LocalConfig> {
   await ensureLocalDirs(paths);
 
   try {
@@ -534,7 +534,7 @@ export async function readConfig(paths: JustMemoryPaths): Promise<LocalConfig> {
   }
 }
 
-export async function writeConfig(paths: JustMemoryPaths, config: LocalConfig): Promise<void> {
+export async function writeConfig(paths: OneMemoryPaths, config: LocalConfig): Promise<void> {
   await ensureLocalDirs(paths);
   const next = { ...config, updated_at: now() };
   await fs.writeFile(paths.configPath, `${JSON.stringify(next, null, 2)}\n`, "utf8");
@@ -554,18 +554,18 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-export async function withTempJustMemoryHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
-  const previous = process.env.JUSTMEMORY_HOME;
-  const home = await fs.mkdtemp(path.join(os.tmpdir(), "justmemory-test-"));
-  process.env.JUSTMEMORY_HOME = home;
+export async function withTempOneMemoryHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
+  const previous = process.env.ONEMEMORY_HOME;
+  const home = await fs.mkdtemp(path.join(os.tmpdir(), "1memory-test-"));
+  process.env.ONEMEMORY_HOME = home;
 
   try {
     return await fn(home);
   } finally {
     if (previous === undefined) {
-      delete process.env.JUSTMEMORY_HOME;
+      delete process.env.ONEMEMORY_HOME;
     } else {
-      process.env.JUSTMEMORY_HOME = previous;
+      process.env.ONEMEMORY_HOME = previous;
     }
     await fs.rm(home, { recursive: true, force: true });
   }
@@ -596,14 +596,14 @@ Create `src/storage/lancedb.ts`:
 
 ```ts
 import * as lancedb from "@lancedb/lancedb";
-import { resolveJustMemoryPaths } from "../config/paths.js";
+import { resolveOneMemoryPaths } from "../config/paths.js";
 
 export interface LocalDatabase {
   db: Awaited<ReturnType<typeof lancedb.connect>>;
 }
 
 export async function openLocalDatabase(): Promise<LocalDatabase> {
-  const paths = resolveJustMemoryPaths();
+  const paths = resolveOneMemoryPaths();
   const db = await lancedb.connect(paths.lancedbDir);
   return { db };
 }
@@ -649,8 +649,8 @@ Create `src/profiles/profile-service.ts`:
 ```ts
 import { nanoid } from "nanoid";
 import { readConfig, workspaceKey, writeConfig } from "../config/config-store.js";
-import { resolveJustMemoryPaths } from "../config/paths.js";
-import { JustMemoryError } from "../core/errors.js";
+import { resolveOneMemoryPaths } from "../config/paths.js";
+import { OneMemoryError } from "../core/errors.js";
 import { ProfileRecord } from "../core/types.js";
 
 const profiles = new Map<string, ProfileRecord>();
@@ -682,7 +682,7 @@ export async function listProfiles(): Promise<ProfileRecord[]> {
     const profile = createProfile("local_default");
     profiles.set(profile.profile_id, profile);
 
-    const paths = resolveJustMemoryPaths();
+    const paths = resolveOneMemoryPaths();
     const config = await readConfig(paths);
     config.default_profile_id = profile.profile_id;
     await writeConfig(paths, config);
@@ -701,12 +701,12 @@ export async function resolveProfile(input: {
   if (input.profile_id) {
     const profile = profiles.get(input.profile_id);
     if (!profile) {
-      throw new JustMemoryError("profile_not_found", "Profile does not exist.", "Choose an existing profile.");
+      throw new OneMemoryError("profile_not_found", "Profile does not exist.", "Choose an existing profile.");
     }
     return profile;
   }
 
-  const paths = resolveJustMemoryPaths();
+  const paths = resolveOneMemoryPaths();
   const config = await readConfig(paths);
   const key = workspaceKey(input.workspace, input.repo);
   const selected = config.selected_profiles[key];
@@ -750,7 +750,7 @@ export async function selectProfile(input: {
   repo?: string;
 }): Promise<ProfileRecord> {
   const profile = await resolveProfile({ profile_id: input.profile_id });
-  const paths = resolveJustMemoryPaths();
+  const paths = resolveOneMemoryPaths();
   const config = await readConfig(paths);
   config.selected_profiles[workspaceKey(input.workspace, input.repo)] = profile.profile_id;
   config.default_profile_id = profile.profile_id;
@@ -768,11 +768,11 @@ Create `tests/unit/profile-service.test.ts`:
 ```ts
 import { describe, expect, it } from "vitest";
 import { listProfiles, resolveProfile } from "../../src/profiles/profile-service.js";
-import { withTempJustMemoryHome } from "../helpers/test-env.js";
+import { withTempOneMemoryHome } from "../helpers/test-env.js";
 
 describe("profile service", () => {
   it("creates a default profile", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const profiles = await listProfiles();
       expect(profiles.length).toBeGreaterThan(0);
       expect(profiles[0].profile_id).toMatch(/^prof_/);
@@ -780,7 +780,7 @@ describe("profile service", () => {
   });
 
   it("creates a workspace profile when workspace metadata is supplied", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const profile = await resolveProfile({ workspace: "/tmp/acme-api" });
       expect(profile.name).toBe("acme-api");
       expect(profile.workspace_paths).toContain("/tmp/acme-api");
@@ -816,7 +816,7 @@ Create `src/memory/memory-service.ts`:
 import crypto from "node:crypto";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { JustMemoryError } from "../core/errors.js";
+import { OneMemoryError } from "../core/errors.js";
 import { MemoryRecord, MemoryType, ProfileRecord } from "../core/types.js";
 
 const memories = new Map<string, MemoryRecord>();
@@ -897,7 +897,7 @@ export async function getMemories(memoryIds: string[]): Promise<MemoryRecord[]> 
   const records = memoryIds.map((id) => memories.get(id)).filter((record): record is MemoryRecord => Boolean(record));
 
   if (records.length !== memoryIds.length) {
-    throw new JustMemoryError("memory_not_found", "One or more memories were not found.", "Pass existing memory IDs.");
+    throw new OneMemoryError("memory_not_found", "One or more memories were not found.", "Pass existing memory IDs.");
   }
 
   return records;
@@ -918,27 +918,27 @@ Create `tests/unit/memory-service.test.ts`:
 import { describe, expect, it } from "vitest";
 import { getMemories, rememberMemory } from "../../src/memory/memory-service.js";
 import { resolveProfile } from "../../src/profiles/profile-service.js";
-import { withTempJustMemoryHome } from "../helpers/test-env.js";
+import { withTempOneMemoryHome } from "../helpers/test-env.js";
 
 describe("memory service", () => {
   it("stores and reads a memory by id", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const profile = await resolveProfile({ workspace: "/tmp/app" });
       const memory = await rememberMemory(profile, {
-        content: "Use LanceDB as the local JustMemory store.",
+        content: "Use LanceDB as the local 1memory store.",
         memory_type: "instruction",
         labels: ["backend"]
       });
 
       const [loaded] = await getMemories([memory.memory_id]);
 
-      expect(loaded.content).toBe("Use LanceDB as the local JustMemory store.");
+      expect(loaded.content).toBe("Use LanceDB as the local 1memory store.");
       expect(loaded.profile_id).toBe(profile.profile_id);
     });
   });
 
   it("does not create duplicate active memories for identical content", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const profile = await resolveProfile({ workspace: "/tmp/app" });
       const first = await rememberMemory(profile, {
         content: "Remember exact duplicates only once.",
@@ -1043,7 +1043,7 @@ export async function recallMemory(profile: ProfileRecord, query: string, limit 
     context_block:
       citations.length === 0
         ? ""
-        : ["Relevant JustMemory context:", ...citations.map((citation) => `- [${citation.memory_id}] ${citation.content}`)].join("\n"),
+        : ["Relevant 1memory context:", ...citations.map((citation) => `- [${citation.memory_id}] ${citation.content}`)].join("\n"),
     citations,
     candidate_ids: citations.map((citation) => citation.memory_id),
     confidence: citations.length === 0 ? 0 : Math.min(0.95, 0.4 + citations.length * 0.1),
@@ -1062,14 +1062,14 @@ import { describe, expect, it } from "vitest";
 import { rememberMemory } from "../../src/memory/memory-service.js";
 import { resolveProfile } from "../../src/profiles/profile-service.js";
 import { recallMemory } from "../../src/recall/recall-service.js";
-import { withTempJustMemoryHome } from "../helpers/test-env.js";
+import { withTempOneMemoryHome } from "../helpers/test-env.js";
 
 describe("recall service", () => {
   it("recalls active memories with citations", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const profile = await resolveProfile({ workspace: "/tmp/app" });
       const memory = await rememberMemory(profile, {
-        content: "Use MCP stdio for local JustMemory clients.",
+        content: "Use MCP stdio for local 1memory clients.",
         memory_type: "instruction",
         labels: ["mcp", "stdio"]
       });
@@ -1109,7 +1109,7 @@ Expected: recall service tests pass.
 Create `src/health/health-service.ts`:
 
 ```ts
-import { resolveJustMemoryPaths } from "../config/paths.js";
+import { resolveOneMemoryPaths } from "../config/paths.js";
 import { IdentityPrincipal, ProfileRecord } from "../core/types.js";
 
 export const LOCAL_PRINCIPAL: IdentityPrincipal = {
@@ -1154,7 +1154,7 @@ export function capabilities(defaultProfile?: ProfileRecord) {
 }
 
 export function health(profile?: ProfileRecord) {
-  const paths = resolveJustMemoryPaths();
+  const paths = resolveOneMemoryPaths();
   return {
     status: "ok",
     degraded_components: [],
@@ -1179,8 +1179,8 @@ export function explainSetup(profile?: ProfileRecord) {
     sandbox_writes_available: false,
     indexes_ready: true,
     explanation: profile
-      ? `JustMemory is running locally with no login. This workspace resolves to profile ${profile.name}. Reads and writes are allowed.`
-      : "JustMemory is running locally with no login, but no profile has been resolved yet.",
+      ? `1memory is running locally with no login. This workspace resolves to profile ${profile.name}. Reads and writes are allowed.`
+      : "1memory is running locally with no login, but no profile has been resolved yet.",
     next_step: profile ? "Save or recall local memories." : "Pass workspace metadata or select a profile."
   };
 }
@@ -1345,11 +1345,11 @@ import {
   handleMemoryRecall,
   handleMemoryRemember
 } from "../../src/mcp/tools.js";
-import { withTempJustMemoryHome } from "../helpers/test-env.js";
+import { withTempOneMemoryHome } from "../helpers/test-env.js";
 
 describe("MCP tool handlers", () => {
   it("runs the first local memory loop", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const capabilities = await handleMemoryCapabilities({ workspace: "/tmp/app" });
       expect(capabilities.ok).toBe(true);
 
@@ -1358,7 +1358,7 @@ describe("MCP tool handlers", () => {
 
       const remembered = await handleMemoryRemember({
         workspace: "/tmp/app",
-        content: "JustMemory Alpha Slice 1 uses lexical recall before embeddings.",
+        content: "1memory Alpha Slice 1 uses lexical recall before embeddings.",
         memory_type: "fact",
         labels: ["alpha", "recall"]
       });
@@ -1422,7 +1422,7 @@ import {
 
 export function createMcpServer(): McpServer {
   const server = new McpServer({
-    name: "justmemory",
+    name: "1memory",
     version: "0.0.0"
   });
 
@@ -1494,7 +1494,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  console.error("Usage: justmemory mcp");
+  console.error("Usage: 1memory mcp");
   process.exitCode = 1;
 }
 
@@ -1568,7 +1568,7 @@ Extend `tests/integration/mcp-tools.test.ts` with a test that:
 
 1. Writes a memory.
 2. Clears module-local caches if any exist.
-3. Reads the memory by ID again from the same temp `JUSTMEMORY_HOME`.
+3. Reads the memory by ID again from the same temp `ONEMEMORY_HOME`.
 
 Expected: the memory survives within the local LanceDB data directory.
 
@@ -1617,7 +1617,7 @@ Run:
 
 ```bash
 npm link
-justmemory mcp
+1memory mcp
 ```
 
 Expected: MCP server starts and waits for stdio. Stop with Ctrl-C.
@@ -1629,9 +1629,9 @@ Use this manual config shape in an MCP client:
 ```json
 {
   "mcpServers": {
-    "justmemory": {
+    "1memory": {
       "command": "npx",
-      "args": ["-y", "justmemory", "mcp"]
+      "args": ["-y", "1memory", "mcp"]
     }
   }
 }
@@ -1642,7 +1642,7 @@ For local development before the package is published, use the linked binary or 
 ```json
 {
   "mcpServers": {
-    "justmemory-local": {
+    "1memory-local": {
       "command": "node",
       "args": ["/absolute/path/to/agent-investigation-memory/dist/cli.js", "mcp"]
     }
@@ -1650,7 +1650,7 @@ For local development before the package is published, use the linked binary or 
 }
 ```
 
-Expected: client shows the JustMemory MCP server as connected and can call `memory_capabilities`.
+Expected: client shows the 1memory MCP server as connected and can call `memory_capabilities`.
 
 ---
 
@@ -1661,7 +1661,7 @@ Alpha Slice 1 is complete when:
 - [x] `npm run build` succeeds.
 - [x] `npm test` succeeds.
 - [x] `npm run typecheck` succeeds.
-- [x] `justmemory mcp` starts a stdio MCP server.
+- [x] `1memory mcp` starts a stdio MCP server.
 - [x] `memory_capabilities` returns local-only capabilities and `requires_login=false`.
 - [x] `memory_health` returns local storage health.
 - [x] `memory_explain_setup` explains the local no-login setup.
@@ -1680,4 +1680,4 @@ Alpha Slice 1 is complete when:
 - [x] The implementation does not add embeddings yet.
 - [x] Every tool response uses the standard response envelope.
 - [x] All stable error codes are actionable.
-- [x] The MCP config path remains compatible with the documented `npx -y justmemory mcp` shape.
+- [x] The MCP config path remains compatible with the documented `npx -y 1memory mcp` shape.

@@ -4,7 +4,7 @@ import {
   getVectorRetrievalReadySync,
   probeVectorRetrievalReady
 } from "../embeddings/embedding-runtime.js";
-import { resolveJustMemoryPaths } from "../config/paths.js";
+import { resolveOneMemoryPaths } from "../config/paths.js";
 import { IdentityPrincipal, ProfileRecord } from "../core/types.js";
 import { getMigrationFailure } from "../storage/migrations-runner.js";
 
@@ -59,7 +59,7 @@ export async function capabilities(defaultProfile?: ProfileRecord) {
 }
 
 export async function health(profile?: ProfileRecord) {
-  const paths = resolveJustMemoryPaths();
+  const paths = resolveOneMemoryPaths();
   const migrationError = getMigrationFailure();
   const vectorReady = getVectorRetrievalReadySync() || (await probeVectorRetrievalReady());
   const modelPresent = isBundledEmbeddingModelPresent();
@@ -71,7 +71,7 @@ export async function health(profile?: ProfileRecord) {
   if (!vectorReady) {
     if (!modelPresent) {
       warnings.push(
-        "Vector retrieval is inactive: bundled ONNX model files are missing. Run `pnpm run setup:embeddings`, then restart JustMemory. Lexical and metadata recall remain available."
+        "Vector retrieval is inactive: bundled ONNX model files are missing. Run `pnpm run setup:embeddings`, then restart 1memory. Lexical and metadata recall remain available."
       );
     } else {
       warnings.push(
@@ -108,8 +108,8 @@ export function explainSetup(profile?: ProfileRecord) {
     sandbox_writes_available: false,
     indexes_ready: true,
     explanation: profile
-      ? `JustMemory is running locally with no login. This workspace resolves to profile ${profile.name}. Reads and writes are allowed.`
-      : "JustMemory is running locally with no login, but no profile has been resolved yet.",
+      ? `1memory is running locally with no login. This workspace resolves to profile ${profile.name}. Reads and writes are allowed.`
+      : "1memory is running locally with no login, but no profile has been resolved yet.",
     next_step: profile ? "Save or recall local memories." : "Pass workspace metadata or select a profile."
   };
 }

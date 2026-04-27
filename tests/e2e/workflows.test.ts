@@ -17,13 +17,13 @@ import {
   handleProfilesList
 } from "../../src/mcp/tools.js";
 import { openLocalDatabase, SESSIONS_TABLE } from "../../src/storage/lancedb.js";
-import { withTempJustMemoryHome } from "../helpers/test-env.js";
+import { withTempOneMemoryHome } from "../helpers/test-env.js";
 
-const ws = (name: string) => `/tmp/justmemory-e2e-${name}`;
+const ws = (name: string) => `/tmp/1memory-e2e-${name}`;
 
 describe("e2e workflows (MCP handlers)", () => {
   it("workflow: cold start — list profiles, capabilities, health, explain, current profile", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const list = await handleProfilesList();
       expect(list.ok).toBe(true);
       if (!list.ok) return;
@@ -57,12 +57,12 @@ describe("e2e workflows (MCP handlers)", () => {
       expect(context.ok).toBe(true);
       if (!context.ok) return;
       expect(context.data.resolved_profile.profile_id).toBeTruthy();
-      expect(context.data.context_block).toMatch(/No matching local memories were found|Relevant JustMemory context/);
+      expect(context.data.context_block).toMatch(/No matching local memories were found|Relevant 1memory context/);
     });
   });
 
   it("workflow: write → get → recall → list with filters", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w = ws("crud");
       const remembered = await handleMemoryRemember({
         workspace: w,
@@ -123,7 +123,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: remember without explicit session stores implicit source session metadata", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w = ws("implicit-session-remember");
       const remembered = await handleMemoryRemember({
         workspace: w,
@@ -172,7 +172,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: memory_context best-effort scopes by repo/branch when source metadata is available", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const workspace = ws("context-scope");
       await handleMemoryRemember({
         workspace,
@@ -202,7 +202,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: memory_context uses session_id scope and deterministic focus/budget shaping", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const workspace = ws("context-session-shape");
       const sessionId = "sess_e2e_context_scope_001";
 
@@ -267,7 +267,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: duplicate remember returns duplicate_ignored", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w = ws("dedupe");
       const body = {
         workspace: w,
@@ -292,7 +292,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: two workspaces keep memories isolated per profile", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const alpha = ws("alpha");
       const beta = ws("beta");
 
@@ -335,7 +335,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: profile select then remember under that scope", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w1 = ws("sel-a");
       const w2 = ws("sel-b");
 
@@ -376,7 +376,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: memory_list pagination across pages", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w = ws("page");
       const ids: string[] = [];
       for (let i = 0; i < 5; i++) {
@@ -417,7 +417,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: recall with no memories returns empty candidates (vector has nothing to rank)", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w = ws("empty-recall");
       await handleMemoryCapabilities({ workspace: w });
 
@@ -434,7 +434,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: session start then end updates status and handoff summary", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w = ws("session");
       const sessionId = "sess_e2e_001";
 
@@ -448,7 +448,7 @@ describe("e2e workflows (MCP handlers)", () => {
       if (!started.ok) return;
       expect(started.data.session_id).toBe(sessionId);
       expect(started.data.session_status).toBe("active");
-      expect(started.data.context_block).toMatch(/Relevant JustMemory context|No matching local memories were found/i);
+      expect(started.data.context_block).toMatch(/Relevant 1memory context|No matching local memories were found/i);
 
       const ended = await handleMemorySessionEnd({
         workspace: w,
@@ -466,7 +466,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: session end without prior start creates a synthetic fallback row with metadata markers", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const workspace = ws("session-end-fallback");
       const sessionId = "sess_e2e_fallback_001";
       const ended = await handleMemorySessionEnd({
@@ -495,7 +495,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: session start generates session_id when omitted", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w = ws("session-generated-id");
       const started = await handleMemorySessionStart({
         workspace: w,
@@ -510,7 +510,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: session start with existing session_id reuses row and updates client metadata", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const workspace = ws("session-start-resume");
       const sessionId = "sess_e2e_resume_001";
 
@@ -544,7 +544,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: session end with sync_summary creates ingest job and recallable memory", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w = ws("session-sync");
       const sessionId = "sess_e2e_sync_001";
 
@@ -590,7 +590,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: session end sync_summary with empty summary reports warnings and no proposed memories", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w = ws("session-sync-empty");
       const sessionId = "sess_e2e_sync_empty_001";
 
@@ -629,7 +629,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: session end with async_full queues job and status call resumes/completes it", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w = ws("session-async");
       const sessionId = "sess_e2e_async_001";
 
@@ -673,7 +673,7 @@ describe("e2e workflows (MCP handlers)", () => {
   });
 
   it("workflow: async ingest with empty summary surfaces failed status and last_error", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const w = ws("session-async-fail");
       const sessionId = "sess_e2e_async_fail_001";
 

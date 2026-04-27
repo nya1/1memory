@@ -188,7 +188,7 @@ export const MEMORY_PROMPT_DEFINITIONS: PromptDefinition[] = [
           content: {
             type: "text",
             text: [
-              "Follow this JustMemory startup workflow in order:",
+              "Follow this 1memory startup workflow in order:",
               "1) Call memory_capabilities with the provided workspace/repo context.",
               "2) Call memory_health with the same context.",
               "3) Call memory_session_start with session metadata (session_id/client/workspace/repo/branch).",
@@ -272,7 +272,7 @@ export const MEMORY_PROMPT_DEFINITIONS: PromptDefinition[] = [
 
 export function createMcpServer(): McpServer {
   const server = new McpServer({
-    name: "justmemory",
+    name: "1memory",
     version: "0.0.0"
   });
   for (const tool of MEMORY_TOOL_DEFINITIONS) {

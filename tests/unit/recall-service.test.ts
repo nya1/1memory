@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { rememberMemory } from "../../src/memory/memory-service.js";
 import { resolveProfile } from "../../src/profiles/profile-service.js";
 import { recallMemory } from "../../src/recall/recall-service.js";
-import { withTempJustMemoryHome } from "../helpers/test-env.js";
+import { withTempOneMemoryHome } from "../helpers/test-env.js";
 
 describe("recall service", () => {
   it("recalls active memories with citations (lexical + real vector channel)", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const profile = await resolveProfile({ workspace: "/tmp/app" });
       const memory = await rememberMemory(profile, {
-        content: "Use MCP stdio for local JustMemory clients.",
+        content: "Use MCP stdio for local 1memory clients.",
         memory_type: "instruction",
         labels: ["mcp", "stdio"]
       });

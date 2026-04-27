@@ -1,8 +1,8 @@
-# JustMemory MCP-Facing Agent Contract
+# 1memory MCP-Facing Agent Contract
 
 **Status:** Draft companion to `PRD-company-wide-agent-memory-v1.1.md`  
 **Audience:** MCP client implementers, agent harness authors, product, engineering  
-**Purpose:** Define the contract an AI agent sees when it uses JustMemory through MCP.
+**Purpose:** Define the contract an AI agent sees when it uses 1memory through MCP.
 
 ---
 
@@ -135,7 +135,7 @@ Scope inputs may include:
 
 ### Memory Types
 
-JustMemory v1 exposes four memory types:
+1memory v1 exposes four memory types:
 
 - `fact`: stable truth, subject to supersession
 - `event`: time-bound occurrence or decision
@@ -200,21 +200,21 @@ If v1 does not store source records, `memory_recall` must not claim source-messa
 
 MCP clients vary widely in how they install, authenticate, and persist configuration. The contract should make identity/profile setup deterministic rather than relying on client-specific convention.
 
-JustMemory should be local-first. A user should be able to install the npm package and use memory locally without creating an account or logging in. Hosted auth is required only for cloud sync, shared team profiles, CI/review bots, enterprise policy, or remote admin features.
+1memory should be local-first. A user should be able to install the npm package and use memory locally without creating an account or logging in. Hosted auth is required only for cloud sync, shared team profiles, CI/review bots, enterprise policy, or remote admin features.
 
 ### Local Runtime and Packaging
 
-The local package, CLI, and MCP server should be implemented in TypeScript/Node and distributed as the `justmemory` npm package.
+The local package, CLI, and MCP server should be implemented in TypeScript/Node and distributed as the `1memory` npm package.
 
 Required entrypoints:
 
-- `justmemory`: CLI entrypoint
-- `justmemory mcp`: MCP server entrypoint, normally launched by MCP clients
-- `justmemory mcp install <client>`: guided client configuration
-- `justmemory doctor`: local setup validation
-- `justmemory export`: local data export for backup or future cloud import
+- `1memory`: CLI entrypoint
+- `1memory mcp`: MCP server entrypoint, normally launched by MCP clients
+- `1memory mcp install <client>`: guided client configuration
+- `1memory doctor`: local setup validation
+- `1memory export`: local data export for backup or future cloud import
 
-The package should not require a local daemon for v1. The MCP client starts `justmemory mcp` as a stdio process unless a specific client requires another transport.
+The package should not require a local daemon for v1. The MCP client starts `1memory mcp` as a stdio process unless a specific client requires another transport.
 
 Local runtime goals:
 
@@ -223,7 +223,7 @@ Local runtime goals:
 - no Docker
 - no external service
 - no separate database server
-- local data stored under a predictable JustMemory data directory
+- local data stored under a predictable 1memory data directory
 
 ### Supported Identity Modes
 
@@ -430,7 +430,7 @@ Outputs:
 - actionable next step if setup is incomplete or ambiguous
 - `request_id`
 
-This tool is for trust and debugging. It should translate raw policy/profile state into a concise explanation such as: "JustMemory is running locally with no login. This repo resolves to the local Billing profile through workspace path. Reads and writes are allowed. Vector indexing is ready." For hosted/team mode, the explanation should identify the signed-in user and remote org.
+This tool is for trust and debugging. It should translate raw policy/profile state into a concise explanation such as: "1memory is running locally with no login. This repo resolves to the local Billing profile through workspace path. Reads and writes are allowed. Vector indexing is ready." For hosted/team mode, the explanation should identify the signed-in user and remote org.
 
 ### `memory_session_start`
 
@@ -821,14 +821,14 @@ Resources provide read-only context that MCP clients can inspect without tool ca
 
 Recommended resources:
 
-- `justmemory://status`
-- `justmemory://setup/explanation`
-- `justmemory://current/context`
-- `justmemory://profiles/current`
-- `justmemory://profiles/{profile_id}/summary`
-- `justmemory://profiles/{profile_id}/latest`
-- `justmemory://sessions/{session_id}/summary`
-- `justmemory://governance/queue-counts`
+- `1memory://status`
+- `1memory://setup/explanation`
+- `1memory://current/context`
+- `1memory://profiles/current`
+- `1memory://profiles/{profile_id}/summary`
+- `1memory://profiles/{profile_id}/latest`
+- `1memory://sessions/{session_id}/summary`
+- `1memory://governance/queue-counts`
 
 Resources should be compact and safe to render in clients.
 
@@ -856,7 +856,7 @@ Current local implementation exposes `start_coding_session`, `recall_context`, a
 
 ### 9.1 Setup and Capability Flow
 
-1. MCP client connects to JustMemory server.
+1. MCP client connects to 1memory server.
 2. Agent calls `memory_capabilities`.
 3. Server returns identity/auth modes, effective principal, limits, enabled tools, and supported profiles.
 4. Agent calls `memory_health`.
@@ -1016,16 +1016,16 @@ This section shows the intended developer experience from installation to multi-
 Developer action:
 
 ```bash
-npm install -g justmemory
-justmemory mcp install cursor
+npm install -g 1memory
+1memory mcp install cursor
 ```
 
-`justmemory mcp install <client>` should be optionally interactive. For local-first non-interactive usage, the current implementation supports workspace-scoped install planning/apply with `--dry-run`, and generates client artifacts for Cursor, Claude Code, Claude Desktop snippet output, and generic MCP.
+`1memory mcp install <client>` should be optionally interactive. For local-first non-interactive usage, the current implementation supports workspace-scoped install planning/apply with `--dry-run`, and generates client artifacts for Cursor, Claude Code, Claude Desktop snippet output, and generic MCP.
 
 Non-interactive example:
 
 ```bash
-justmemory mcp install cursor \
+1memory mcp install cursor \
   --yes \
   --transport stdio \
   --scope workspace \
@@ -1036,8 +1036,8 @@ justmemory mcp install cursor \
 Optional hosted/team setup:
 
 ```bash
-justmemory login
-justmemory sync enable
+1memory login
+1memory sync enable
 ```
 
 Equivalent manual MCP config:
@@ -1045,9 +1045,9 @@ Equivalent manual MCP config:
 ```json
 {
   "mcpServers": {
-    "justmemory": {
+    "1memory": {
       "command": "npx",
-      "args": ["-y", "justmemory", "mcp"]
+      "args": ["-y", "1memory", "mcp"]
     }
   }
 }
@@ -1058,8 +1058,8 @@ If the package is installed globally, clients may also call the binary directly:
 ```json
 {
   "mcpServers": {
-    "justmemory": {
-      "command": "justmemory",
+    "1memory": {
+      "command": "1memory",
       "args": ["mcp"]
     }
   }
@@ -1072,7 +1072,7 @@ What happens in the background:
 2. If interactive mode is enabled, it explains the planned config change and asks for confirmation.
 3. If no hosted credential exists, the CLI initializes local-only storage and a `local_anonymous` principal.
 4. If the user previously logged in, the CLI can reuse that hosted/team credential.
-5. The installer writes or updates the MCP client config with an `npx justmemory mcp` command or a direct `justmemory mcp` command when globally installed.
+5. The installer writes or updates the MCP client config with an `npx 1memory mcp` command or a direct `1memory mcp` command when globally installed.
 6. If `--smoke-test` is enabled, it starts the MCP server and runs setup validation.
 7. On first client connection, the agent calls `memory_capabilities` and `memory_health`.
 8. The server returns identity principal, enabled tools, limits, schema version, profile resolution order, and health state.
@@ -1080,7 +1080,7 @@ What happens in the background:
 
 Success state:
 
-- The IDE shows the JustMemory MCP server as connected.
+- The IDE shows the 1memory MCP server as connected.
 - The agent can call `memory_capabilities`.
 - No login is required for local-only memory.
 - No profile setup is required when the effective principal and workspace map to one profile.
@@ -1123,7 +1123,7 @@ Success state:
 Developer action:
 
 ```bash
-justmemory explain
+1memory explain
 ```
 
 Agent-facing equivalent:
@@ -1533,7 +1533,7 @@ Success state:
 Developer action:
 
 ```bash
-justmemory doctor
+1memory doctor
 ```
 
 What happens in the background:
@@ -1555,7 +1555,7 @@ Success state:
 Developer action:
 
 ```bash
-justmemory mcp install cursor --smoke-test
+1memory mcp install cursor --smoke-test
 ```
 
 What happens in the background:
@@ -1570,7 +1570,7 @@ What happens in the background:
 Expected user-facing output:
 
 ```text
-JustMemory ready for github.com/acme/web-app
+1memory ready for github.com/acme/web-app
 Mode: local-only
 Profile: local / web-app
 Read: allowed
@@ -1586,7 +1586,7 @@ Success state:
 
 ### 10.14 Local Context vs Shared Memory
 
-JustMemory should not replace local committed context files such as `AGENTS.md`.
+1memory should not replace local committed context files such as `AGENTS.md`.
 
 Use local repo context for:
 
@@ -1597,7 +1597,7 @@ Use local repo context for:
 - directory ownership
 - instructions that should version with the codebase
 
-Use JustMemory for:
+Use 1memory for:
 
 - cross-session investigation history
 - user corrections and updated decisions
@@ -1609,7 +1609,7 @@ Use JustMemory for:
 What happens in the background:
 
 1. Agents continue reading local committed context through normal IDE/file access.
-2. JustMemory recall supplies only the compact, relevant evolving history.
+2. 1memory recall supplies only the compact, relevant evolving history.
 3. If memory contradicts committed context, the response should expose citations and confidence so the agent can ask or verify instead of silently overriding repo rules.
 
 Success state:
@@ -1622,7 +1622,7 @@ Success state:
 Developer action:
 
 ```bash
-justmemory conformance run
+1memory conformance run
 ```
 
 What happens in the background:
@@ -1910,11 +1910,11 @@ This directly addresses common user pain where MCP and UI show different memorie
 The MCP contract is ready for v1 when:
 
 - An agent can connect locally without login, discover capabilities, implicitly resolve a profile, and request profile selection only when ambiguous.
-- Local package, CLI, and MCP server are distributed through the TypeScript/Node `justmemory` npm package.
+- Local package, CLI, and MCP server are distributed through the TypeScript/Node `1memory` npm package.
 - MCP client configuration supports guided interactive setup and equivalent non-interactive flags.
 - Hosted/team mode can authenticate without changing the local-first contract.
 - `memory_explain_setup` gives a plain-language explanation of identity mode, profile, read/write capability, and health for the current workspace.
-- `justmemory doctor` or equivalent setup validation checks identity/auth, MCP registration, profile resolution, health, and sandbox write behavior.
+- `1memory doctor` or equivalent setup validation checks identity/auth, MCP registration, profile resolution, health, and sandbox write behavior.
 - `memory_session_start` returns a useful context block for a repo-scoped session.
 - `memory_session_end` provides a single canonical session close/handoff path.
 - `memory_session_end(preview=true)` returns proposed memories or a clear explanation of why no memories are proposed.

@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { JustMemoryError } from "../core/errors.js";
+import { OneMemoryError } from "../core/errors.js";
 import { MemoryRecord, MemoryType, ProfileRecord } from "../core/types.js";
 import { embedText, zeroEmbedding } from "../embeddings/embedding-runtime.js";
 import { MEMORIES_TABLE, openLocalDatabase } from "../storage/lancedb.js";
@@ -208,7 +208,7 @@ export async function getMemories(memoryIds: string[]): Promise<MemoryRecord[]> 
   const map = new Map(rows.map((row) => rowToMemory(row)).map((m) => [m.memory_id, m]));
   const ordered = memoryIds.map((id) => map.get(id));
   if (ordered.some((record) => !record)) {
-    throw new JustMemoryError("memory_not_found", "One or more memories were not found.", "Pass existing memory IDs.");
+    throw new OneMemoryError("memory_not_found", "One or more memories were not found.", "Pass existing memory IDs.");
   }
   return ordered as MemoryRecord[];
 }

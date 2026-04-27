@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { JustMemoryError } from "./errors.js";
+import { OneMemoryError } from "./errors.js";
 import { SCHEMA_VERSION, Scope } from "./types.js";
 
 export interface SuccessEnvelope<T> {
@@ -58,7 +58,7 @@ export function success<T>(
 }
 
 export function failure(error: unknown, requestId = newRequestId()): FailureEnvelope {
-  if (error instanceof JustMemoryError) {
+  if (error instanceof OneMemoryError) {
     return {
       ok: false,
       request_id: requestId,
@@ -80,7 +80,7 @@ export function failure(error: unknown, requestId = newRequestId()): FailureEnve
     error: {
       code: "backend_degraded",
       message: error instanceof Error ? error.message : "Unexpected local backend error.",
-      action: "Inspect local JustMemory logs and retry the request."
+      action: "Inspect local 1memory logs and retry the request."
     },
     warnings: []
   };

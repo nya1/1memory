@@ -1,6 +1,6 @@
 import * as lancedb from "@lancedb/lancedb";
 import { ensureLocalDirs } from "../config/config-store.js";
-import { resolveJustMemoryPaths } from "../config/paths.js";
+import { resolveOneMemoryPaths } from "../config/paths.js";
 import { runPendingMigrations } from "./migrations-runner.js";
 
 export {
@@ -19,7 +19,7 @@ export interface LocalDatabase {
 const dbCache = new Map<string, Promise<LocalDatabase>>();
 
 export async function openLocalDatabase(): Promise<LocalDatabase> {
-  const paths = resolveJustMemoryPaths();
+  const paths = resolveOneMemoryPaths();
   let p = dbCache.get(paths.lancedbDir);
   if (!p) {
     p = (async () => {

@@ -48,10 +48,10 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
   const termRows = stdout.rows ?? 24;
   const termCols = stdout.columns ?? 80;
 
-  const embedSkipped = process.env.JUSTMEMORY_SKIP_EMBEDDINGS === "1";
+  const embedSkipped = process.env.ONEMEMORY_SKIP_EMBEDDINGS === "1";
   const [embedBundledPresent] = useState(() => isBundledEmbeddingModelPresent());
   const [embedPipeline, setEmbedPipeline] = useState<"idle" | "loading" | "ok" | "fail">(() => {
-    if (process.env.JUSTMEMORY_SKIP_EMBEDDINGS === "1") return "idle";
+    if (process.env.ONEMEMORY_SKIP_EMBEDDINGS === "1") return "idle";
     if (!isBundledEmbeddingModelPresent()) return "idle";
     return getVectorRetrievalReadySync() ? "ok" : "loading";
   });
@@ -455,7 +455,7 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
   );
 
   const embedStatusLine = embedSkipped ? (
-    <Text color={theme.warn}>Local embedding model: skipped (JUSTMEMORY_SKIP_EMBEDDINGS=1)</Text>
+    <Text color={theme.warn}>Local embedding model: skipped (ONEMEMORY_SKIP_EMBEDDINGS=1)</Text>
   ) : embedBundledPresent ? (
     <Box flexDirection="column">
       <Text color={theme.ok}>
@@ -478,7 +478,7 @@ export function ExploreApp(props: ExploreAppProps): JSX.Element {
   const header = (
     <Box borderStyle="round" borderColor={theme.border} paddingX={1} marginBottom={1} flexDirection="column">
       <Text bold color={theme.title}>
-        JustMemory
+        1memory
       </Text>
       {embedStatusLine}
       <Text dimColor color={theme.subtitle}>

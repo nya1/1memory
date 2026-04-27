@@ -1,6 +1,6 @@
 import { readConfig, writeConfig } from "../config/config-store.js";
-import { resolveJustMemoryPaths } from "../config/paths.js";
-import { JustMemoryError } from "../core/errors.js";
+import { resolveOneMemoryPaths } from "../config/paths.js";
+import { OneMemoryError } from "../core/errors.js";
 import { SCHEMA_VERSION } from "../core/types.js";
 import { EMBEDDING_MODEL_DIM } from "../embeddings/constants.js";
 import {
@@ -20,9 +20,9 @@ export interface Migration {
   run(db: LanceDbConnection): Promise<void>;
 }
 
-let migrationFailure: JustMemoryError | null = null;
+let migrationFailure: OneMemoryError | null = null;
 
-export function getMigrationFailure(): JustMemoryError | null {
+export function getMigrationFailure(): OneMemoryError | null {
   return migrationFailure;
 }
 
@@ -264,7 +264,7 @@ const migration006: Migration = {
 const MIGRATIONS: Migration[] = [migration001, migration002, migration003, migration004, migration005, migration006];
 
 async function persistStoreMeta(lastMigrationId: string): Promise<void> {
-  const paths = resolveJustMemoryPaths();
+  const paths = resolveOneMemoryPaths();
   const config = await readConfig(paths);
   await writeConfig(paths, {
     ...config,
@@ -288,10 +288,10 @@ export async function runPendingMigrations(db: LanceDbConnection): Promise<void>
       lastNewlyApplied = m.id;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      migrationFailure = new JustMemoryError(
+      migrationFailure = new OneMemoryError(
         "backend_degraded",
         `Local store migration failed: ${message}`,
-        "Inspect ~/.justmemory logs and data directory, fix errors, and restart JustMemory. Export data before destructive fixes when possible.",
+        "Inspect ~/.1memory logs and data directory, fix errors, and restart 1memory. Export data before destructive fixes when possible.",
         { migration_id: m.id }
       );
       throw migrationFailure;

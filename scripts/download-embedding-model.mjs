@@ -35,7 +35,7 @@ const MODEL_FILES = [
 function fetchBinary(url) {
   return new Promise((resolve, reject) => {
     https
-      .get(url, { headers: { "User-Agent": "justmemory-setup/1.0" } }, (res) => {
+      .get(url, { headers: { "User-Agent": "1memory-setup/1.0" } }, (res) => {
         if (res.statusCode === 302 || res.statusCode === 301 || res.statusCode === 307 || res.statusCode === 308) {
           const loc = res.headers.location;
           if (!loc) {

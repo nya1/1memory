@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 
-export interface JustMemoryPaths {
+export interface OneMemoryPaths {
   rootDir: string;
   configPath: string;
   lancedbDir: string;
@@ -9,8 +9,8 @@ export interface JustMemoryPaths {
   exportsDir: string;
 }
 
-export function resolveJustMemoryPaths(): JustMemoryPaths {
-  const rootDir = process.env.JUSTMEMORY_HOME ?? path.join(os.homedir(), ".justmemory");
+export function resolveOneMemoryPaths(): OneMemoryPaths {
+  const rootDir = process.env.ONEMEMORY_HOME ?? path.join(os.homedir(), ".1memory");
 
   return {
     rootDir,

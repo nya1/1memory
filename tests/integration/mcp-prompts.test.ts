@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MEMORY_PROMPT_DEFINITIONS, MEMORY_TOOL_DEFINITIONS } from "../../src/mcp/server.js";
-import { withTempJustMemoryHome } from "../helpers/test-env.js";
+import { withTempOneMemoryHome } from "../helpers/test-env.js";
 
 describe("MCP prompt registration", () => {
   it("exports startup and handoff prompt definitions", async () => {
@@ -23,7 +23,7 @@ describe("MCP prompt registration", () => {
   });
 
   it("exports memory_context and aligned tool input constraints", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const toolByName = new Map(MEMORY_TOOL_DEFINITIONS.map((t) => [t.name, t]));
       expect(toolByName.has("memory_context")).toBe(true);
       expect(toolByName.get("memory_context")?.description).toMatch(/compact/i);

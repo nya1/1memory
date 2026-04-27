@@ -58,7 +58,7 @@ async function main(): Promise<void> {
     }
 
     if (subcommand) {
-      throw new Error("Usage: justmemory mcp | justmemory mcp install <client> [--dry-run] [--scope=workspace|user]");
+      throw new Error("Usage: 1memory mcp | 1memory mcp install <client> [--dry-run] [--scope=workspace|user]");
     }
 
     await runMcpServer();
@@ -66,7 +66,7 @@ async function main(): Promise<void> {
   }
 
   console.error(
-    "Usage: justmemory explore [--profile=<id>] [--workspace=<dir>] | justmemory mcp | justmemory mcp install <client> [--dry-run] [--scope=workspace|user]"
+    "Usage: 1memory explore [--profile=<id>] [--workspace=<dir>] | 1memory mcp | 1memory mcp install <client> [--dry-run] [--scope=workspace|user]"
   );
   process.exitCode = 1;
 }

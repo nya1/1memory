@@ -1,4 +1,4 @@
-# JustMemory — Company-Wide Agent Memory PRD
+# 1memory — Company-Wide Agent Memory PRD
 
 **Version:** v1.1  
 **Date:** 2026-04-25  
@@ -264,7 +264,7 @@ A **dedicated agent or service** that continuously improves memory quality as co
 
 ## 13.1) Open core strategy and feature boundary
 
-JustMemory follows an open core model: a strong self-hostable OSS core for adoption, plus paid cloud and enterprise layers for governance, scale, and compliance.
+1memory follows an open core model: a strong self-hostable OSS core for adoption, plus paid cloud and enterprise layers for governance, scale, and compliance.
 
 ### OSS core vs commercial boundary
 
@@ -359,7 +359,7 @@ MVP is complete when:
 
 ## 18) System architecture and service boundaries
 
-This section defines the concrete runtime architecture for JustMemory v1 and the ownership boundaries between services.
+This section defines the concrete runtime architecture for 1memory v1 and the ownership boundaries between services.
 
 ### 18.1 High-level architecture diagram
 

@@ -1,4 +1,4 @@
-# JustMemory Local Backend PRD / Spec
+# 1memory Local Backend PRD / Spec
 
 **Version:** v0.1  
 **Date:** 2026-04-25  
@@ -7,13 +7,13 @@
 **Audience:** Backend engineering, MCP implementers, agent harness authors  
 **Related docs:** `VISION.md`, `docs/PRD-company-wide-agent-memory-v1.1.md`, `docs/MCP-facing-agent-contract.md`
 
-**Implementation status (2026-04-27):** Alpha Slice 1 plus major parts of Phases 2, 4, and 7 are implemented in-repo as the `justmemory` package (`npm run build` / `justmemory mcp`): MCP tools for capabilities, health, setup explanation, profiles, remember/get/**list**/recall, session start/end, and ingest status; MCP prompts (`start_coding_session`, `recall_context`, `session_handoff`); behavioral tool descriptions; implicit session creation for recall/remember paths when explicit session start is not called; profiles and memories persisted under `JUSTMEMORY_HOME` (default `~/.justmemory`) in LanceDB; serialized writes via a DB mutex; append-only **audit** rows for selected tools; idempotent startup migrations tracked in LanceDB (`schema_migrations`) with `last_applied_migration_id` / `store_schema_version` mirrored into `config.json`; and installer foundations via `justmemory mcp install <client>` for Cursor, Claude Code, Claude Desktop snippet output, and generic MCP config generation.
+**Implementation status (2026-04-27):** Alpha Slice 1 plus major parts of Phases 2, 4, and 7 are implemented in-repo as the `1memory` package (`npm run build` / `1memory mcp`): MCP tools for capabilities, health, setup explanation, profiles, remember/get/**list**/recall, session start/end, and ingest status; MCP prompts (`start_coding_session`, `recall_context`, `session_handoff`); behavioral tool descriptions; implicit session creation for recall/remember paths when explicit session start is not called; profiles and memories persisted under `ONEMEMORY_HOME` (default `~/.1memory`) in LanceDB; serialized writes via a DB mutex; append-only **audit** rows for selected tools; idempotent startup migrations tracked in LanceDB (`schema_migrations`) with `last_applied_migration_id` / `store_schema_version` mirrored into `config.json`; and installer foundations via `1memory mcp install <client>` for Cursor, Claude Code, Claude Desktop snippet output, and generic MCP config generation.
 
 ---
 
 ## 1) Product Summary
 
-JustMemory v0.1 is a local-only backend for durable agent memory. It runs on the developer's machine, exposes the MCP tool surface defined in `docs/MCP-facing-agent-contract.md`, and stores all persistent data in a local LanceDB database.
+1memory v0.1 is a local-only backend for durable agent memory. It runs on the developer's machine, exposes the MCP tool surface defined in `docs/MCP-facing-agent-contract.md`, and stores all persistent data in a local LanceDB database.
 
 The first version exists to prove the core developer workflow before any hosted control plane: an agent can connect through MCP, resolve a local profile, remember useful facts, recall them later with citations, and inspect or correct memory without login, Docker, or external services.
 
@@ -28,13 +28,13 @@ Coding agents lose useful context between sessions. Developers compensate with m
 - Context priming consumes time and tokens every session.
 - Existing memory experiments are hard to inspect, debug, or trust.
 
-For v0.1, JustMemory should solve this locally first. The system should feel like a small, reliable piece of developer infrastructure that an MCP client can start and use immediately.
+For v0.1, 1memory should solve this locally first. The system should feel like a small, reliable piece of developer infrastructure that an MCP client can start and use immediately.
 
 ---
 
 ## 3) Goals
 
-- Provide a local backend that MCP clients can connect to through `justmemory mcp`.
+- Provide a local backend that MCP clients can connect to through `1memory mcp`.
 - Use LanceDB as the local persistent database for profiles, memories, source records, sessions, jobs, feedback, and audit events.
 - Implement the required local-first subset of the MCP-facing agent contract.
 - Support explicit memory writes, session handoff ingestion, recall, inspection, verification, feedback, and local export.
@@ -50,7 +50,7 @@ For v0.1, JustMemory should solve this locally first. The system should feel lik
 - Background daemon architecture. The MCP server is started by the MCP client as a local process.
 - Heavy model-assisted governance. v0.1 uses deterministic validation, redaction, dedupe, and lifecycle rules.
 - Full source transcript retention by default. Source records are supported, but raw message storage must be configurable and conservative.
-- Replacing project documentation or code search. JustMemory stores distilled agent memory and lightweight source provenance, not an entire repo index.
+- Replacing project documentation or code search. 1memory stores distilled agent memory and lightweight source provenance, not an entire repo index.
 
 ---
 
@@ -73,28 +73,28 @@ The successful first-run story:
 
 ### 6.1 Package and Entrypoints
 
-The backend ships as the `justmemory` npm package.
+The backend ships as the `1memory` npm package.
 
 Required commands:
 
-- `justmemory mcp`: starts the stdio MCP server.
-- `justmemory mcp install <client>`: writes or guides local MCP client configuration.
-- `justmemory doctor`: validates local database, MCP registration, profile resolution, and sandbox write behavior.
-- `justmemory export`: exports local data to JSON or NDJSON.
-- `justmemory profiles`: lists, creates, selects, and inspects local profiles.
+- `1memory mcp`: starts the stdio MCP server.
+- `1memory mcp install <client>`: writes or guides local MCP client configuration.
+- `1memory doctor`: validates local database, MCP registration, profile resolution, and sandbox write behavior.
+- `1memory export`: exports local data to JSON or NDJSON.
+- `1memory profiles`: lists, creates, selects, and inspects local profiles.
 
 ### 6.2 Local Data Directory
 
 Default data directory:
 
 ```text
-~/.justmemory/
+~/.1memory/
 ```
 
 Required contents:
 
 ```text
-~/.justmemory/
+~/.1memory/
   config.json
   lancedb/
   exports/
@@ -105,7 +105,7 @@ Required contents:
 
 ### 6.3 Process Model
 
-- The MCP client starts `justmemory mcp` as a stdio child process.
+- The MCP client starts `1memory mcp` as a stdio child process.
 - v0.1 does not require a daemon or separate database server.
 - The backend must support repeated short-lived MCP server processes against the same local data directory.
 - Writes must use a local lock to prevent concurrent corruption when multiple clients start separate MCP server processes.
@@ -148,15 +148,15 @@ The implementation may mark advanced tools as local-only or experimental in `mem
 
 The local backend must expose these MCP resources:
 
-- `justmemory://status`
-- `justmemory://setup/explanation`
-- `justmemory://current/context`
-- `justmemory://profiles/current`
-- `justmemory://profiles/{profile_id}/summary`
-- `justmemory://profiles/{profile_id}/latest`
-- `justmemory://sessions/{session_id}/summary`
+- `1memory://status`
+- `1memory://setup/explanation`
+- `1memory://current/context`
+- `1memory://profiles/current`
+- `1memory://profiles/{profile_id}/summary`
+- `1memory://profiles/{profile_id}/latest`
+- `1memory://sessions/{session_id}/summary`
 
-`justmemory://governance/queue-counts` may return zero counts and an explanation that local v0.1 has deterministic governance only.
+`1memory://governance/queue-counts` may return zero counts and an explanation that local v0.1 has deterministic governance only.
 
 ### 7.3 Required v0.1 Prompts
 
@@ -401,7 +401,7 @@ Migration requirements:
 - Migrations run automatically on startup.
 - Migrations are idempotent.
 - Failed migrations stop mutating tools and return `backend_degraded`.
-- `justmemory export` must work before destructive migrations are attempted.
+- `1memory export` must work before destructive migrations are attempted.
 
 ---
 
@@ -441,7 +441,7 @@ Minimum local requirements:
 - Node.js 20 LTS or newer.
 - 1 CPU core.
 - 2 GB system RAM.
-- 256 MB free RAM available to the `justmemory mcp` process during first model load.
+- 256 MB free RAM available to the `1memory mcp` process during first model load.
 - 250 MB free disk for the package, bundled model assets, LanceDB data, exports, and logs.
 - 64-bit Linux, macOS, or Windows platform supported by `@lancedb/lancedb`.
 
@@ -455,7 +455,7 @@ Recommended local requirements:
 
 Degraded-mode requirement:
 
-- On machines below the minimum or when the embedding model cannot load, JustMemory must still start, accept explicit memories, and serve lexical plus metadata recall. Vector retrieval is disabled and reported through `memory_health` rather than failing MCP startup.
+- On machines below the minimum or when the embedding model cannot load, 1memory must still start, accept explicit memories, and serve lexical plus metadata recall. Vector retrieval is disabled and reported through `memory_health` rather than failing MCP startup.
 
 Requirements:
 
@@ -498,7 +498,7 @@ const extractor = await pipeline("feature-extraction", "paraphrase-MiniLM-L3-v2"
 const output = await extractor(texts, { pooling: "mean", normalize: true });
 ```
 
-The model directory layout should be owned by the JustMemory package, for example:
+The model directory layout should be owned by the 1memory package, for example:
 
 ```text
 models/
@@ -661,7 +661,7 @@ Relevant responses must include:
 - latest successful write
 - warnings that explain degraded behavior
 
-`justmemory doctor` must run a sandbox smoke test that:
+`1memory doctor` must run a sandbox smoke test that:
 
 1. Starts local profile resolution.
 2. Performs `memory_capabilities`.
@@ -675,7 +675,7 @@ Relevant responses must include:
 
 ## 14) Export and Portability
 
-`justmemory export` must export:
+`1memory export` must export:
 
 - profiles
 - memories
@@ -691,7 +691,7 @@ Export formats:
 - JSON for a complete local backup.
 - NDJSON for larger table-oriented exports.
 
-The export should preserve memory IDs, supersession links, source IDs, redaction states, and timestamps so it can later be imported into hosted JustMemory.
+The export should preserve memory IDs, supersession links, source IDs, redaction states, and timestamps so it can later be imported into hosted 1memory.
 
 ---
 
@@ -701,7 +701,7 @@ The export should preserve memory IDs, supersession links, source IDs, redaction
 
 ```mermaid
 flowchart LR
-  A["MCP Client\nCursor / Claude / other"] --> B["justmemory mcp\nstdio server"]
+  A["MCP Client\nCursor / Claude / other"] --> B["1memory mcp\nstdio server"]
   B --> C["MCP Tool Router"]
   C --> D["Profile Resolver"]
   C --> E["Memory Service"]
@@ -824,7 +824,7 @@ Primary metrics:
 - A remembered item is readable by ID immediately after write.
 - A remembered item is recallable in a later MCP session when indexing is ready.
 - `memory_explain_setup` accurately explains the current local profile and storage state.
-- `justmemory doctor` can diagnose missing client config, bad data directory permissions, database lock issues, and unavailable embeddings.
+- `1memory doctor` can diagnose missing client config, bad data directory permissions, database lock issues, and unavailable embeddings.
 
 Quality metrics:
 
@@ -839,7 +839,7 @@ Quality metrics:
 
 The local backend v0.1 is complete when:
 
-- `justmemory mcp` starts as a stdio MCP server without login.
+- `1memory mcp` starts as a stdio MCP server without login.
 - A clean install creates a local data directory and LanceDB schema.
 - `memory_capabilities`, `memory_health`, and `memory_explain_setup` work before any memories exist.
 - Profile resolution works from explicit profile ID, workspace path, repo metadata, and default profile.
@@ -856,8 +856,8 @@ The local backend v0.1 is complete when:
 - `memory_feedback` records feedback and performs safe deterministic lifecycle actions.
 - `memory_timeline` returns chronological context for a memory, session, repo, or query.
 - `memory_verify` reports lifecycle state, source availability, supersession chain, and audit request IDs.
-- `justmemory doctor` passes a sandbox write/recall test and leaves normal recall unpolluted.
-- `justmemory export` exports all local data needed for backup or future hosted import.
+- `1memory doctor` passes a sandbox write/recall test and leaves normal recall unpolluted.
+- `1memory export` exports all local data needed for backup or future hosted import.
 - All tool responses follow the standard response envelope from the MCP contract.
 
 ---

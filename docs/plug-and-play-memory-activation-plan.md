@@ -2,15 +2,15 @@
 
 ## Goal
 
-Make JustMemory work reliably across Cursor, Claude Code, Claude Desktop, and generic MCP clients with minimal user input. The product should recall useful prior context at the start of work, store high-signal durable memories during or after work, and continue to function even when a client does not support lifecycle hooks.
+Make 1memory work reliably across Cursor, Claude Code, Claude Desktop, and generic MCP clients with minimal user input. The product should recall useful prior context at the start of work, store high-signal durable memories during or after work, and continue to function even when a client does not support lifecycle hooks.
 
 ## Architecture
 
-JustMemory should use a layered activation model:
+1memory should use a layered activation model:
 
 1. **Forgiving MCP core:** Core memory tools work without requiring an explicit `memory_session_start` call.
 2. **Portable MCP activation:** Tool descriptions and MCP prompts guide agents to call memory tools at the right time.
-3. **Client-specific glue:** `justmemory mcp install <client>` generates the best available config, rule, or hook integration for each client.
+3. **Client-specific glue:** `1memory mcp install <client>` generates the best available config, rule, or hook integration for each client.
 
 `memory_session_start` remains useful for rich startup context, but it must be an optimization rather than a prerequisite. If a client never calls it, `memory_recall`, `memory_remember`, and `memory_session_end` should still resolve a profile and create enough session bookkeeping to preserve continuity.
 
@@ -21,7 +21,7 @@ JustMemory should use a layered activation model:
 - `memory_session_end` remains non-blocking when start was skipped and can create a synthetic session record for continuity.
 - Phase 2 is implemented with behavioral tool descriptions for high-signal memory tools.
 - Phase 3 is implemented with MCP prompts: `start_coding_session`, `recall_context`, `session_handoff`.
-- Phase 4 foundation is implemented with `justmemory mcp install <client>`, `--dry-run`, and `--scope`.
+- Phase 4 foundation is implemented with `1memory mcp install <client>`, `--dry-run`, and `--scope`.
 - Phase 5/6 integration artifacts are implemented for Cursor rules and Claude Code hook scaffolding.
 - Installer merge now fails fast with clear, path-specific errors when existing MCP JSON is invalid.
 
@@ -83,7 +83,7 @@ JustMemory should use a layered activation model:
 
 **Scope:**
 
-- Expand the CLI to support `justmemory mcp install <client>`.
+- Expand the CLI to support `1memory mcp install <client>`.
 - Support at least `cursor`, `claude-code`, `claude-desktop`, and `generic`.
 - Add `--dry-run`, `--yes`, and `--scope workspace|user` options.
 - Generate or print exact config changes.
@@ -103,8 +103,8 @@ JustMemory should use a layered activation model:
 
 **Scope:**
 
-- Generate Cursor MCP configuration for `justmemory mcp`.
-- Generate `.cursor/rules/justmemory.mdc`.
+- Generate Cursor MCP configuration for `1memory mcp`.
+- Generate `.cursor/rules/1memory.mdc`.
 - Mark the rule as always-on where supported.
 - Instruct Cursor agents to recall memory at the start of coding tasks, remember durable decisions/corrections, and submit handoff summaries when appropriate.
 
@@ -124,7 +124,7 @@ JustMemory should use a layered activation model:
 - Generate a `SessionStart` hook that retrieves startup context.
 - Generate a `UserPromptSubmit` hook only if needed for relevant prompt recall.
 - Generate a `Stop` or `SessionEnd` hook that sends a concise handoff summary when available.
-- Keep hook scripts thin; all durable behavior should live in the JustMemory CLI or MCP server.
+- Keep hook scripts thin; all durable behavior should live in the 1memory CLI or MCP server.
 
 **Acceptance Criteria:**
 

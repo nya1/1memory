@@ -1,22 +1,22 @@
-# JustMemory Local-First Release Roadmap
+# 1memory Local-First Release Roadmap
 
 **Status:** Draft tracker  
 **Date:** 2026-04-26  
-**Scope:** Local-first JustMemory v1, starting with the LanceDB-backed MCP server  
+**Scope:** Local-first 1memory v1, starting with the LanceDB-backed MCP server  
 **Related docs:** `docs/PRD-local-backend-lancedb-v0.1.md`, `docs/MCP-facing-agent-contract.md`, `docs/implementation-plan-local-backend-alpha-slice-1.md`
 
 ---
 
 ## Release Goal
 
-Release a plug-and-play local JustMemory MCP server that a developer can use without external services.
+Release a plug-and-play local 1memory MCP server that a developer can use without external services.
 
 The first release is successful when a user can add the MCP config, start an agent in a repo, save local memories, recall them later with citations, receive startup context, end a session with a handoff, and inspect or correct memory when needed.
 
 Non-negotiable release qualities:
 
 - Works locally with no login.
-- Starts through `npx -y justmemory mcp`.
+- Starts through `npx -y 1memory mcp`.
 - Uses local LanceDB persistence.
 - Requires no Docker, Python, Ollama, hosted database, hosted embedding API, or GPU.
 - Degrades gracefully to lexical recall when vector embeddings are unavailable.
@@ -37,7 +37,7 @@ Non-negotiable release qualities:
 | 6 | Lifecycle and Trust Tools | Add verify, timeline, supersede, forget, and feedback. | Users can debug and correct bad memory. |
 | 7 | Local Setup UX | Add install, doctor, export, and smoke tests. | A user can self-diagnose setup and back up local data. |
 | 8 | MCP Conformance and Hardening | Validate the MCP contract and failure modes. | Tool schemas, envelopes, and errors pass conformance tests. |
-| 9 | Local v1 Release | Package, document, and publish the local-first release. | `npx -y justmemory mcp` works from a clean machine. |
+| 9 | Local v1 Release | Package, document, and publish the local-first release. | `npx -y 1memory mcp` works from a clean machine. |
 | 10 | Post-Local Team/Hosted Track | Start hosted/team capabilities without breaking local mode. | Hosted auth and sync are additive, not required for local users. |
 
 ---
@@ -57,7 +57,7 @@ Non-negotiable release qualities:
 - [x] Define local-only v0.1 backend scope.
 - [x] Choose LanceDB as local database.
 - [x] Choose Node/TypeScript package and MCP stdio runtime.
-- [x] Define plug-and-play MCP config using `npx -y justmemory mcp`.
+- [x] Define plug-and-play MCP config using `npx -y 1memory mcp`.
 - [x] Choose low-resource local embedding default: bundled quantized ONNX `paraphrase-MiniLM-L3-v2`.
 - [x] Define minimum local target: 1 CPU core, 2 GB RAM, 250 MB disk.
 - [ ] Freeze Alpha Slice 1 implementation scope before coding starts.
@@ -80,7 +80,7 @@ Non-negotiable release qualities:
 **Work:**
 
 - [x] Create TypeScript npm package scaffold.
-- [x] Add `justmemory` CLI with `mcp` command.
+- [x] Add `1memory` CLI with `mcp` command.
 - [x] Start MCP stdio server.
 - [x] Add standard response envelope and request IDs.
 - [x] Add local data directory handling.
@@ -102,7 +102,7 @@ Non-negotiable release qualities:
 
 - `npm run build` passes.
 - `npm test` passes.
-- `justmemory mcp` starts locally.
+- `1memory mcp` starts locally.
 - An MCP client can save a memory, fetch it by ID, and recall it later.
 - No external services are required.
 
@@ -160,7 +160,7 @@ Non-negotiable release qualities:
 
 ## Phase 4: Session Lifecycle
 
-**Goal:** Make JustMemory useful at agent startup and shutdown.
+**Goal:** Make 1memory useful at agent startup and shutdown.
 
 **Work:**
 
@@ -171,8 +171,8 @@ Non-negotiable release qualities:
 - [x] Return startup context block with citations.
 - [x] Store session status, summary, outcome, open tasks, workspace, repo, and branch.
 - [ ] Add session resources:
-  - [ ] `justmemory://current/context`
-  - [ ] `justmemory://sessions/{session_id}/summary`
+  - [ ] `1memory://current/context`
+  - [ ] `1memory://sessions/{session_id}/summary`
 - [x] Add implicit session fallback for `memory_recall` and `memory_remember` when explicit session start is missing.
 - [x] Allow `memory_session_start` to omit `session_id` and generate it server-side.
 - [x] Keep `memory_session_end` non-blocking when session start was skipped by creating a synthetic fallback session record.
@@ -239,7 +239,7 @@ Non-negotiable release qualities:
 
 **Work:**
 
-- [x] Implement `justmemory mcp install <client>`.
+- [x] Implement `1memory mcp install <client>`.
 - [ ] Support non-interactive install flags:
   - [ ] `--yes`
   - [ ] `--transport stdio`
@@ -251,7 +251,7 @@ Non-negotiable release qualities:
 - [x] Generate Claude Code MCP config plus executable hook scaffolding.
 - [x] Generate Claude Desktop and generic MCP config snippets.
 - [x] Fail fast with clear error messages when existing MCP JSON config is invalid.
-- [ ] Implement `justmemory doctor`.
+- [ ] Implement `1memory doctor`.
 - [ ] Doctor checks:
   - [ ] local data directory permissions
   - [ ] LanceDB accessibility
@@ -259,7 +259,7 @@ Non-negotiable release qualities:
   - [ ] MCP registration
   - [ ] sandbox write/recall
   - [ ] embedding readiness
-- [ ] Implement `justmemory export`.
+- [ ] Implement `1memory export`.
 - [ ] Add JSON and NDJSON export formats.
 
 **Exit criteria:**
@@ -315,7 +315,7 @@ Non-negotiable release qualities:
 
 **Exit criteria:**
 
-- `npx -y justmemory mcp` starts from a clean machine.
+- `npx -y 1memory mcp` starts from a clean machine.
 - Cursor or another MCP client can connect using documented config.
 - User can remember, recall, start a session, end a session, inspect, correct, run doctor, and export.
 - Release docs clearly state local-first limitations.

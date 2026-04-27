@@ -115,11 +115,11 @@ function shapeContextBlock(
 ): { context_block: string; warnings: string[] } {
   const warnings: string[] = [];
   const shapingRequested = Boolean(input.focus || input.token_budget !== undefined || input.token_budget_mode);
-  if (!contextBlock.startsWith("Relevant JustMemory context:")) {
+  if (!contextBlock.startsWith("Relevant 1memory context:")) {
     return { context_block: contextBlock, warnings };
   }
   const lines = contextBlock.split("\n");
-  const header = lines[0] ?? "Relevant JustMemory context:";
+  const header = lines[0] ?? "Relevant 1memory context:";
   const memoryLines = lines.slice(1).filter((line) => line.trim().length > 0);
   if (memoryLines.length === 0) {
     return { context_block: contextBlock, warnings };

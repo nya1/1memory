@@ -189,7 +189,7 @@ export async function recallMemory(profile: ProfileRecord, query: string, limit 
     context_block:
       citations.length === 0
         ? ""
-        : ["Relevant JustMemory context:", ...citations.map((citation) => `- [${citation.memory_id}] ${citation.content}`)].join("\n"),
+        : ["Relevant 1memory context:", ...citations.map((citation) => `- [${citation.memory_id}] ${citation.content}`)].join("\n"),
     citations,
     candidate_ids: citations.map((citation) => citation.memory_id),
     confidence: citations.length === 0 ? 0 : Math.min(0.95, 0.4 + citations.length * 0.1),

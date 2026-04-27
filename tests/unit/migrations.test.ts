@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { readConfig } from "../../src/config/config-store.js";
-import { resolveJustMemoryPaths } from "../../src/config/paths.js";
+import { resolveOneMemoryPaths } from "../../src/config/paths.js";
 import { SCHEMA_VERSION } from "../../src/core/types.js";
 import { SCHEMA_MIGRATIONS_TABLE } from "../../src/storage/lancedb-schema.js";
 import { openLocalDatabase } from "../../src/storage/lancedb.js";
-import { withTempJustMemoryHome } from "../helpers/test-env.js";
+import { withTempOneMemoryHome } from "../helpers/test-env.js";
 
 describe("LanceDB migrations", () => {
   it("applies 001 once and records schema_migrations", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const { db } = await openLocalDatabase();
       const reg = await db.openTable(SCHEMA_MIGRATIONS_TABLE);
       const afterFirst = (await reg.query().toArray()) as Array<{ migration_id?: string }>;
@@ -24,7 +24,7 @@ describe("LanceDB migrations", () => {
       const n = afterSecond.filter((r) => r.migration_id === "001_initial_core_tables").length;
       expect(n).toBe(1);
 
-      const paths = resolveJustMemoryPaths();
+      const paths = resolveOneMemoryPaths();
       const cfg = await readConfig(paths);
       expect(cfg.last_applied_migration_id).toBe("006_add_ingest_job_last_error");
       expect(cfg.store_schema_version).toBe(SCHEMA_VERSION);

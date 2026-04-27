@@ -259,5 +259,5 @@ export async function buildSessionContextBlock(profile: ProfileRecord, scope: Se
   if (memories.length === 0) {
     return "No matching local memories were found.";
   }
-  return ["Relevant JustMemory context:", ...memories.map((m) => `- [${m.memory_id}] ${m.content}`)].join("\n");
+  return ["Relevant 1memory context:", ...memories.map((m) => `- [${m.memory_id}] ${m.content}`)].join("\n");
 }

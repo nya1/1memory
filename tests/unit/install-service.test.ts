@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { applyInstallPlan, buildInstallPlan } from "../../src/install/install-service.js";
 
 async function withTempWorkspace<T>(fn: (workspace: string) => Promise<T>): Promise<T> {
-  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "justmemory-install-"));
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "1memory-install-"));
   try {
     return await fn(workspace);
   } finally {
@@ -25,7 +25,7 @@ describe("install service", () => {
       expect(plan.artifacts.map((a) => a.path)).toEqual(
         expect.arrayContaining([
           path.join(workspace, ".cursor", "mcp.json"),
-          path.join(workspace, ".cursor", "rules", "justmemory.mdc")
+          path.join(workspace, ".cursor", "rules", "1memory.mdc")
         ])
       );
     });
@@ -41,7 +41,7 @@ describe("install service", () => {
       const result = await applyInstallPlan(plan, true);
       expect(result.dry_run).toBe(true);
       expect(result.wrote_files).toEqual([]);
-      const stat = await fs.stat(path.join(workspace, "justmemory.mcp.json")).catch(() => null);
+      const stat = await fs.stat(path.join(workspace, "1memory.mcp.json")).catch(() => null);
       expect(stat).toBeNull();
     });
   });
@@ -57,7 +57,7 @@ describe("install service", () => {
       expect(result.wrote_files.length).toBeGreaterThanOrEqual(1);
       expect(result.wrote_files).toContain(path.join(workspace, ".claude", "mcp.json"));
       const written = await fs.readFile(path.join(workspace, ".claude", "mcp.json"), "utf8");
-      expect(written).toContain("\"justmemory\"");
+      expect(written).toContain("\"1memory\"");
       expect(written).toContain("\"mcp\"");
     });
   });
@@ -93,7 +93,7 @@ describe("install service", () => {
         mcpServers?: Record<string, unknown>;
       };
       expect(merged.mcpServers?.existing).toBeTruthy();
-      expect(merged.mcpServers?.justmemory).toBeTruthy();
+      expect(merged.mcpServers?.["1memory"]).toBeTruthy();
     });
   });
 

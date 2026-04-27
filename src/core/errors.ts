@@ -8,7 +8,7 @@ export type ErrorCode =
   | "schema_unsupported"
   | "backend_degraded";
 
-export class JustMemoryError extends Error {
+export class OneMemoryError extends Error {
   constructor(
     public readonly code: ErrorCode,
     message: string,
@@ -16,6 +16,6 @@ export class JustMemoryError extends Error {
     public readonly details: Record<string, unknown> = {}
   ) {
     super(message);
-    this.name = "JustMemoryError";
+    this.name = "OneMemoryError";
   }
 }

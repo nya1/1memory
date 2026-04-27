@@ -39,9 +39,9 @@ function mcpConfigContent(): string {
   return JSON.stringify(
     {
       mcpServers: {
-        justmemory: {
+        "1memory": {
           command: "npx",
-          args: ["-y", "justmemory", "mcp"]
+          args: ["-y", "1memory", "mcp"]
         }
       }
     },
@@ -53,7 +53,7 @@ function mcpConfigContent(): string {
 function cursorRuleContent(): string {
   return [
     "---",
-    "description: JustMemory startup and persistence guidance",
+    "description: 1memory startup and persistence guidance",
     "alwaysApply: true",
     "---",
     "",
@@ -106,7 +106,7 @@ function claudeSessionStartHookContent(): string {
     "CLIENT=\"claude-code\"",
     "",
     "cat <<EOF",
-    "JustMemory startup workflow:",
+    "1memory startup workflow:",
     "1) Call memory_session_start with:",
     "   - session_id: ${SESSION_ID}",
     "   - client: ${CLIENT}",
@@ -129,7 +129,7 @@ function claudeSessionEndHookContent(): string {
     "SESSION_ID=\"${CLAUDE_SESSION_ID:-sess_$(date +%s)}\"",
     "",
     "cat <<EOF",
-    "JustMemory handoff workflow:",
+    "1memory handoff workflow:",
     "1) Draft a concise handoff summary of outcomes and open tasks.",
     "2) Call memory_session_end with:",
     "   - session_id: ${SESSION_ID}",
@@ -184,9 +184,9 @@ export function buildInstallPlan(options: Omit<InstallOptions, "dryRun">): Insta
       mergeJson: true
     });
     artifacts.push({
-      path: path.join(workspaceDir, ".cursor", "rules", "justmemory.mdc"),
+      path: path.join(workspaceDir, ".cursor", "rules", "1memory.mdc"),
       content: cursorRuleContent(),
-      description: "Cursor always-on JustMemory usage rule"
+      description: "Cursor always-on 1memory usage rule"
     });
     return { client, scope, artifacts, notes };
   }
@@ -221,7 +221,7 @@ export function buildInstallPlan(options: Omit<InstallOptions, "dryRun">): Insta
 
   if (client === "claude-desktop") {
     artifacts.push({
-      path: path.join(workspaceDir, "justmemory.claude-desktop.mcp.json"),
+      path: path.join(workspaceDir, "1memory.claude-desktop.mcp.json"),
       content: mcpConfigContent(),
       description: "Claude Desktop MCP config snippet (copy into desktop config)"
     });
@@ -230,9 +230,9 @@ export function buildInstallPlan(options: Omit<InstallOptions, "dryRun">): Insta
   }
 
   artifacts.push({
-    path: path.join(workspaceDir, "justmemory.mcp.json"),
+    path: path.join(workspaceDir, "1memory.mcp.json"),
     content: mcpConfigContent(),
-    description: "Generic MCP config snippet for JustMemory",
+    description: "Generic MCP config snippet for 1memory",
     mergeJson: true
   });
   return { client, scope, artifacts, notes };

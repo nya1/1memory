@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { decodeListCursor, encodeListCursor, listMemoriesPage, rememberMemory } from "../../src/memory/memory-service.js";
 import { resolveProfile } from "../../src/profiles/profile-service.js";
-import { withTempJustMemoryHome } from "../helpers/test-env.js";
+import { withTempOneMemoryHome } from "../helpers/test-env.js";
 
 describe("memory list", () => {
   it("filters by label", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const profile = await resolveProfile({ workspace: "/tmp/list-app" });
       await rememberMemory(profile, { content: "Alpha note", memory_type: "fact", labels: ["a"] });
       await rememberMemory(profile, { content: "Beta note", memory_type: "instruction", labels: ["b"] });
@@ -21,7 +21,7 @@ describe("memory list", () => {
   });
 
   it("paginates with cursors", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const profile = await resolveProfile({ workspace: "/tmp/page-app" });
       for (let i = 0; i < 3; i++) {
         await rememberMemory(profile, { content: `fact body ${i}`, memory_type: "fact" });

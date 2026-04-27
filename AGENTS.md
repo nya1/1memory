@@ -1,6 +1,6 @@
 # Agent Guidance
 
-JustMemory is a local-first memory layer for coding agents. It runs as an MCP stdio server and stores memory locally, with lexical recall always available and local vector recall when the bundled embedding model is present.
+1memory is a local-first memory layer for coding agents. It runs as an MCP stdio server and stores memory locally, with lexical recall always available and local vector recall when the bundled embedding model is present.
 
 ## Source Of Truth
 

@@ -10,11 +10,11 @@ import {
   handleMemoryRemember
 } from "../../src/mcp/tools.js";
 import { openLocalDatabase, SESSIONS_TABLE } from "../../src/storage/lancedb.js";
-import { withTempJustMemoryHome } from "../helpers/test-env.js";
+import { withTempOneMemoryHome } from "../helpers/test-env.js";
 
 describe("MCP tool handlers", () => {
   it("runs the first local memory loop", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const capabilities = await handleMemoryCapabilities({ workspace: "/tmp/app" });
       expect(capabilities.ok).toBe(true);
 
@@ -23,7 +23,7 @@ describe("MCP tool handlers", () => {
 
       const remembered = await handleMemoryRemember({
         workspace: "/tmp/app",
-        content: "JustMemory uses hybrid lexical and vector recall when ONNX embeddings are available.",
+        content: "1memory uses hybrid lexical and vector recall when ONNX embeddings are available.",
         memory_type: "fact",
         labels: ["alpha", "recall"]
       });
@@ -57,10 +57,10 @@ describe("MCP tool handlers", () => {
   });
 
   it("loads memories from LanceDB after module reload (restart simulation)", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const remembered = await handleMemoryRemember({
         workspace: "/tmp/persist-app",
-        content: "Persistent local memory for JustMemory.",
+        content: "Persistent local memory for 1memory.",
         memory_type: "fact",
         labels: ["persist"]
       });
@@ -74,12 +74,12 @@ describe("MCP tool handlers", () => {
       const loaded = await getAgain({ memory_ids: [memoryId] });
       expect(loaded.ok).toBe(true);
       if (!loaded.ok) return;
-      expect(loaded.data.records[0].content).toBe("Persistent local memory for JustMemory.");
+      expect(loaded.data.records[0].content).toBe("Persistent local memory for 1memory.");
     });
   });
 
   it("returns compact memory context for the resolved workspace profile", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const workspace = "/tmp/context-profile";
       const remembered = await handleMemoryRemember({
         workspace,
@@ -95,7 +95,7 @@ describe("MCP tool handlers", () => {
 
       expect(context.data.resolved_profile.profile_id).toBeTruthy();
       expect(context.data.scope.workspace).toBe(workspace);
-      expect(context.data.context_block).toMatch(/Relevant JustMemory context/i);
+      expect(context.data.context_block).toMatch(/Relevant 1memory context/i);
       expect(context.data.context_block).toMatch(/deterministic ids/i);
       expect(context.data.citations).toEqual([]);
       expect(context.data.warnings).toEqual([]);
@@ -103,7 +103,7 @@ describe("MCP tool handlers", () => {
   });
 
   it("supports memory_context optional contract fields without creating a session side effect", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const workspace = "/tmp/context-no-session";
       const context = await handleMemoryContext({
         workspace,
@@ -129,7 +129,7 @@ describe("MCP tool handlers", () => {
   });
 
   it("emits shaping warnings only when memory lines exist and narrowing occurs", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const emptyContext = await handleMemoryContext({
         workspace: "/tmp/context-empty-shape",
         focus: "task",
@@ -165,7 +165,7 @@ describe("MCP tool handlers", () => {
   });
 
   it("validates required memory_remember fields at the handler boundary", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const missingContent = await handleMemoryRemember({
         workspace: "/tmp/remember-validation",
         memory_type: "fact"
@@ -181,14 +181,14 @@ describe("MCP tool handlers", () => {
   });
 
   it("rejects empty memory IDs in memory_get", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const loaded = await handleMemoryGet({ memory_ids: [""] });
       expect(loaded.ok).toBe(false);
     });
   });
 
   it("uses branch in implicit session scoping to avoid collisions", async () => {
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const workspace = "/tmp/implicit-session-branch";
       const repo = "github.com/acme/repo";
 

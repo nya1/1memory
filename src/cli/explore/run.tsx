@@ -10,7 +10,7 @@ export interface ExploreCliOptions {
 
 export async function runExploreTui(options: ExploreCliOptions): Promise<void> {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
-    process.stderr.write("justmemory explore needs an interactive terminal (TTY).\n");
+    process.stderr.write("1memory explore needs an interactive terminal (TTY).\n");
     process.exitCode = 1;
     return;
   }

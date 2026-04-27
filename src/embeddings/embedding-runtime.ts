@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
 import { env, pipeline } from "@huggingface/transformers";
-import { resolveJustMemoryPaths } from "../config/paths.js";
+import { resolveOneMemoryPaths } from "../config/paths.js";
 import { readConfig, writeConfig } from "../config/config-store.js";
 import { EMBEDDING_MODEL_DIM, EMBEDDING_MODEL_DIR } from "./constants.js";
 import { bundledModelOnnxPath, isBundledEmbeddingModelPresent, resolveBundledModelDir, resolveBundledModelsRoot } from "./bundled-paths.js";
@@ -19,13 +19,13 @@ let lastInitError: string | null = null;
 let vectorRetrievalReady = false;
 
 function skipEmbeddings(): boolean {
-  return process.env.JUSTMEMORY_SKIP_EMBEDDINGS === "1";
+  return process.env.ONEMEMORY_SKIP_EMBEDDINGS === "1";
 }
 
 function configureTransformersEnv(): void {
   if (envConfigured) return;
   envConfigured = true;
-  const paths = resolveJustMemoryPaths();
+  const paths = resolveOneMemoryPaths();
   env.allowRemoteModels = false;
   env.allowLocalModels = true;
   env.localModelPath = `${resolveBundledModelsRoot()}${path.sep}`;
@@ -37,7 +37,7 @@ async function sha256File(filePath: string): Promise<string> {
   return crypto.createHash("sha256").update(buf).digest("hex");
 }
 
-async function persistModelChecksum(paths: ReturnType<typeof resolveJustMemoryPaths>, checksum: string): Promise<void> {
+async function persistModelChecksum(paths: ReturnType<typeof resolveOneMemoryPaths>, checksum: string): Promise<void> {
   const cfg = await readConfig(paths);
   await writeConfig(paths, {
     ...cfg,
@@ -50,7 +50,7 @@ async function persistModelChecksum(paths: ReturnType<typeof resolveJustMemoryPa
 
 async function createExtractor(): Promise<FeatureExtractor> {
   if (skipEmbeddings()) {
-    throw new Error("JUSTMEMORY_SKIP_EMBEDDINGS=1");
+    throw new Error("ONEMEMORY_SKIP_EMBEDDINGS=1");
   }
   if (!isBundledEmbeddingModelPresent()) {
     throw new Error("Bundled embedding model is not installed (missing ONNX under models/).");
@@ -65,7 +65,7 @@ async function createExtractor(): Promise<FeatureExtractor> {
   const extractor = await runPipeline("feature-extraction", modelDir, { dtype: "q8" });
   try {
     const checksum = await sha256File(bundledModelOnnxPath());
-    await persistModelChecksum(resolveJustMemoryPaths(), checksum);
+    await persistModelChecksum(resolveOneMemoryPaths(), checksum);
   } catch {
     /* optional metadata; ignore config write failures */
   }

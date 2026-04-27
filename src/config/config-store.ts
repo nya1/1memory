@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import { JustMemoryPaths } from "./paths.js";
+import { OneMemoryPaths } from "./paths.js";
 
 export interface LocalConfig {
   default_profile_id?: string;
@@ -21,14 +21,14 @@ function now(): string {
   return new Date().toISOString();
 }
 
-export async function ensureLocalDirs(paths: JustMemoryPaths): Promise<void> {
+export async function ensureLocalDirs(paths: OneMemoryPaths): Promise<void> {
   await fs.mkdir(paths.rootDir, { recursive: true });
   await fs.mkdir(paths.lancedbDir, { recursive: true });
   await fs.mkdir(paths.logsDir, { recursive: true });
   await fs.mkdir(paths.exportsDir, { recursive: true });
 }
 
-export async function readConfig(paths: JustMemoryPaths): Promise<LocalConfig> {
+export async function readConfig(paths: OneMemoryPaths): Promise<LocalConfig> {
   await ensureLocalDirs(paths);
 
   try {
@@ -50,7 +50,7 @@ export async function readConfig(paths: JustMemoryPaths): Promise<LocalConfig> {
   }
 }
 
-export async function writeConfig(paths: JustMemoryPaths, config: LocalConfig): Promise<void> {
+export async function writeConfig(paths: OneMemoryPaths, config: LocalConfig): Promise<void> {
   await ensureLocalDirs(paths);
   const next = { ...config, updated_at: now() };
   await fs.writeFile(paths.configPath, `${JSON.stringify(next, null, 2)}\n`, "utf8");

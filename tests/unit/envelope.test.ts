@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { failure, success } from "../../src/core/envelope.js";
-import { JustMemoryError } from "../../src/core/errors.js";
+import { OneMemoryError } from "../../src/core/errors.js";
 
 describe("response envelopes", () => {
   it("creates successful envelopes with schema and request id", () => {
@@ -15,7 +15,7 @@ describe("response envelopes", () => {
 
   it("maps known errors into stable failure envelopes", () => {
     const envelope = failure(
-      new JustMemoryError("profile_not_found", "Profile does not exist.", "Choose another profile.")
+      new OneMemoryError("profile_not_found", "Profile does not exist.", "Choose another profile.")
     );
 
     expect(envelope.ok).toBe(false);

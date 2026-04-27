@@ -1,5 +1,5 @@
 /**
- * JustMemory synthetic retrieval benchmark.
+ * 1memory synthetic retrieval benchmark.
  *
  * Inspired by open agent-memory eval patterns (e.g. mem0 evaluation tables, LoCoMo-style
  * QA-over-corpus checks, long-context recall suites) but runs fully local: no LLM judges.
@@ -18,7 +18,7 @@ import { probeVectorRetrievalReady } from "../src/embeddings/embedding-runtime.j
 import { rememberMemory } from "../src/memory/memory-service.js";
 import { resolveProfile } from "../src/profiles/profile-service.js";
 import { recallMemory } from "../src/recall/recall-service.js";
-import { withTempJustMemoryHome } from "./support/temp-home.js";
+import { withTempOneMemoryHome } from "./support/temp-home.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -116,7 +116,7 @@ async function main(): Promise<void> {
     let caseLatencyNs = 0n;
     let qn = 0;
 
-    await withTempJustMemoryHome(async () => {
+    await withTempOneMemoryHome(async () => {
       const profile = await resolveProfile({ workspace });
       const ids: string[] = [];
       for (const m of c.memories) {
@@ -179,7 +179,7 @@ async function main(): Promise<void> {
   const mean_latency_ms = totalQueries ? Number(latencySumNs / BigInt(totalQueries)) / 1e6 : 0;
 
   const summary = {
-    suite: "justmemory-retrieval-synthetic-v1",
+    suite: "1memory-retrieval-synthetic-v1",
     cases: suite.cases.length,
     queries: totalQueries,
     recall_at_1,
@@ -196,7 +196,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  console.log("JustMemory retrieval benchmark (synthetic corpus, local embeddings)");
+  console.log("1memory retrieval benchmark (synthetic corpus, local embeddings)");
   console.log(`cases=${summary.cases} queries=${summary.queries} limit=${limit}`);
   console.log(`recall@1     ${(100 * recall_at_1).toFixed(1)}%`);
   console.log(`recall@${limit} ${(100 * recall_at_k).toFixed(1)}%`);
