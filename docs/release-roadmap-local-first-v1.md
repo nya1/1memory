@@ -30,7 +30,7 @@ Non-negotiable release qualities:
 | --- | --- | --- | --- |
 | 0 | Product and Contract Baseline | Lock the local-first scope and MCP contract. | Docs explain what v1 is, what is deferred, and how agents connect. |
 | 1 | Alpha Slice 1: Local Memory Loop | Build the first useful MCP/LanceDB loop. | Agent can remember, get, and recall a local memory. |
-| 2 | Durable Local Backend | Replace temporary internals with persistent LanceDB-backed services. | Profiles and memories survive process restart and are inspectable. |
+| 2 | Durable Local Backend | Harden the LanceDB-backed services with migrations, locks, audit events, and inspection. | Profiles and memories survive process restart and are inspectable. |
 | 3 | Local Retrieval Quality | Add cheap local embeddings and hybrid ranking. | Recall uses lexical, metadata, and vector channels with citations. |
 | 4 | Session Lifecycle | Add startup context and end-of-session handoff. | Agent gets initial context and can save handoff summaries. |
 | 5 | Ingest and Memory Extraction | Add session summary ingest and idempotent jobs. | Session summaries create durable candidate memories safely. |
@@ -75,26 +75,28 @@ Non-negotiable release qualities:
 
 **Detailed plan:** `docs/implementation-plan-local-backend-alpha-slice-1.md`
 
+**Status (2026-04-26):** Complete in the local package. `npm run build`, `npm test`, and `npm run typecheck` pass; the CLI starts an MCP stdio server; the implemented tool handlers cover the first local memory loop.
+
 **Work:**
 
-- [ ] Create TypeScript npm package scaffold.
-- [ ] Add `justmemory` CLI with `mcp` command.
-- [ ] Start MCP stdio server.
-- [ ] Add standard response envelope and request IDs.
-- [ ] Add local data directory handling.
-- [ ] Add LanceDB connection.
-- [ ] Add local profile resolution.
-- [ ] Implement first tools:
-  - [ ] `memory_capabilities`
-  - [ ] `memory_health`
-  - [ ] `memory_explain_setup`
-  - [ ] `memory_profiles_list`
-  - [ ] `memory_profile_current`
-  - [ ] `memory_profile_select`
-  - [ ] `memory_remember`
-  - [ ] `memory_get`
-  - [ ] basic `memory_recall`
-- [ ] Add unit and integration tests for the first local memory loop.
+- [x] Create TypeScript npm package scaffold.
+- [x] Add `justmemory` CLI with `mcp` command.
+- [x] Start MCP stdio server.
+- [x] Add standard response envelope and request IDs.
+- [x] Add local data directory handling.
+- [x] Add LanceDB connection.
+- [x] Add local profile resolution.
+- [x] Implement first tools:
+  - [x] `memory_capabilities`
+  - [x] `memory_health`
+  - [x] `memory_explain_setup`
+  - [x] `memory_profiles_list`
+  - [x] `memory_profile_current`
+  - [x] `memory_profile_select`
+  - [x] `memory_remember`
+  - [x] `memory_get`
+  - [x] basic `memory_recall`
+- [x] Add unit and integration tests for the first local memory loop.
 
 **Exit criteria:**
 
@@ -110,16 +112,18 @@ Non-negotiable release qualities:
 
 **Goal:** Make local storage reliable enough to build on.
 
+**Status (2026-04-26):** Mostly complete. Profile and memory persistence, idempotent table initialization, schema version in response envelopes, restart-style persistence tests, a global DB write lock, an `audit_events` LanceDB table (auditing selected tools), `memory_list`, and a **startup migration runner** (`schema_migrations` registry + ordered migrations + `config.json` store metadata) landed in-repo. Remaining: additional forward migrations as tables evolve, broader audit coverage, and richer inspection or policy modes beyond the current slice.
+
 **Work:**
 
-- [ ] Store profiles in LanceDB instead of process-local memory.
-- [ ] Store memories in LanceDB instead of process-local memory.
-- [ ] Add schema version tracking.
-- [ ] Add idempotent startup migrations.
-- [ ] Add local write lock for mutating operations.
-- [ ] Add audit event table for reads, writes, and profile resolution.
-- [ ] Add `memory_list` for inspection and debugging.
-- [ ] Add persistence tests across process restart.
+- [x] Store profiles in LanceDB instead of process-local memory.
+- [x] Store memories in LanceDB instead of process-local memory.
+- [x] Add schema version tracking.
+- [x] Add idempotent startup migrations (registry table + runner; extend with new numbered migrations as the schema grows).
+- [x] Add local write lock for mutating operations.
+- [x] Add audit event table for reads, writes, and profile resolution.
+- [x] Add `memory_list` for inspection and debugging.
+- [x] Add persistence tests across process restart.
 
 **Exit criteria:**
 
@@ -160,15 +164,18 @@ Non-negotiable release qualities:
 
 **Work:**
 
-- [ ] Add `sessions` table.
-- [ ] Implement `memory_session_start`.
+- [x] Add `sessions` table.
+- [x] Implement `memory_session_start`.
 - [ ] Implement `memory_context`.
-- [ ] Implement `memory_session_end`.
-- [ ] Return startup context block with citations.
-- [ ] Store session status, summary, outcome, open tasks, workspace, repo, and branch.
+- [x] Implement `memory_session_end`.
+- [x] Return startup context block with citations.
+- [x] Store session status, summary, outcome, open tasks, workspace, repo, and branch.
 - [ ] Add session resources:
   - [ ] `justmemory://current/context`
   - [ ] `justmemory://sessions/{session_id}/summary`
+- [x] Add implicit session fallback for `memory_recall` and `memory_remember` when explicit session start is missing.
+- [x] Allow `memory_session_start` to omit `session_id` and generate it server-side.
+- [x] Keep `memory_session_end` non-blocking when session start was skipped by creating a synthetic fallback session record.
 
 **Exit criteria:**
 
@@ -232,13 +239,18 @@ Non-negotiable release qualities:
 
 **Work:**
 
-- [ ] Implement `justmemory mcp install <client>`.
+- [x] Implement `justmemory mcp install <client>`.
 - [ ] Support non-interactive install flags:
   - [ ] `--yes`
   - [ ] `--transport stdio`
-  - [ ] `--scope workspace`
+  - [x] `--scope workspace`
   - [ ] `--smoke-test`
   - [ ] `--no-login`
+- [x] Support `--dry-run` for install planning.
+- [x] Generate Cursor MCP config and always-on rule artifact.
+- [x] Generate Claude Code MCP config plus executable hook scaffolding.
+- [x] Generate Claude Desktop and generic MCP config snippets.
+- [x] Fail fast with clear error messages when existing MCP JSON config is invalid.
 - [ ] Implement `justmemory doctor`.
 - [ ] Doctor checks:
   - [ ] local data directory permissions
@@ -334,9 +346,9 @@ Non-negotiable release qualities:
 
 ## Current Priority
 
-Start with **Phase 1: Alpha Slice 1**.
+Current implementation has completed Phase 1 and substantial parts of Phases 2, 4, and 7.
 
-Do not begin embeddings, sessions, ingest, lifecycle tools, setup doctor, export, or hosted/team features until the first local memory loop works end to end.
+Near-term priority: finish remaining Phase 7 setup UX items (`--yes`, `--transport`, `--smoke-test`, `--no-login`, `doctor`, and export polishing), then complete Phase 8 MCP conformance hardening.
 
 The next concrete implementation milestone is:
 

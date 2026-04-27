@@ -457,6 +457,7 @@ Outputs:
 - `request_id`
 
 This should be the easiest "make the agent smarter now" call.
+It is recommended but not required for baseline usability: servers may create implicit sessions during `memory_recall` and `memory_remember` when the client does not call explicit session start.
 
 ### `memory_context`
 
@@ -847,6 +848,7 @@ Recommended prompts:
 - `test_memory_setup`: run a sandbox smoke test and explain the result
 
 Prompts should call tools through a documented workflow rather than asking the model to improvise memory strategy.
+Current local implementation exposes `start_coding_session`, `recall_context`, and `session_handoff`.
 
 ---
 
@@ -1018,7 +1020,7 @@ npm install -g justmemory
 justmemory mcp install cursor
 ```
 
-`justmemory mcp install <client>` should be optionally interactive. By default, it can guide the user through detected clients, config file changes, local data directory choice, smoke test, and optional hosted login. For automation, every prompt must have a flag.
+`justmemory mcp install <client>` should be optionally interactive. For local-first non-interactive usage, the current implementation supports workspace-scoped install planning/apply with `--dry-run`, and generates client artifacts for Cursor, Claude Code, Claude Desktop snippet output, and generic MCP.
 
 Non-interactive example:
 

@@ -4,6 +4,8 @@
 
 **Goal:** Build the first working local JustMemory loop: an MCP client can connect with `npx justmemory mcp`, create or resolve a local profile, save a memory, read it by ID, and recall it from local LanceDB storage.
 
+**Implementation status (2026-04-26):** Complete in the local TypeScript package. The implementation includes the package scaffold, CLI, MCP stdio server, standard envelopes, local config paths, LanceDB-backed profiles and memories, lexical/metadata recall, unit tests, integration tests, and restart-style persistence coverage. Verified with `npm run build`, `npm test`, and `npm run typecheck`.
+
 **Architecture:** Start with a single TypeScript package and a focused local backend. The MCP server is a stdio process that routes tool calls into small services for config, profile resolution, memory storage, and basic recall. LanceDB is the local persistence layer; embeddings, sessions, ingest jobs, supersession, forget, feedback, timeline, and source retention are intentionally deferred until this slice is stable.
 
 **Tech Stack:** Node.js 20+, TypeScript, MCP TypeScript SDK, LanceDB JavaScript SDK, Zod, Vitest, tsx.
@@ -24,6 +26,7 @@ Included tools:
 - `memory_profile_select`
 - `memory_remember`
 - `memory_get`
+- `memory_list` (Phase 2 inspection; minimal filters + cursor pagination)
 - basic `memory_recall`
 
 Deferred until Alpha Slice 2:
@@ -64,7 +67,11 @@ Create these files:
 - `src/core/types.ts`: shared domain types.
 - `src/config/paths.ts`: resolves `~/.justmemory` or test override directory.
 - `src/config/config-store.ts`: reads/writes `config.json`.
-- `src/storage/lancedb.ts`: opens LanceDB and initializes tables.
+- `src/storage/lancedb.ts`: opens LanceDB and runs startup migrations.
+- `src/storage/lancedb-schema.ts`: shared table names and `tableExists` helper.
+- `src/storage/migrations-runner.ts`: `schema_migrations` registry, ordered idempotent migrations, store metadata in `config.json`.
+- `src/storage/db-write-mutex.ts`: serializes LanceDB writes and related config mutations.
+- `src/audit/audit-service.ts`: append-only audit events for selected MCP operations.
 - `src/profiles/profile-service.ts`: local profile resolution and selection.
 - `src/memory/memory-service.ts`: remember/get/list primitives backed by LanceDB.
 - `src/recall/recall-service.ts`: basic lexical and metadata recall.
@@ -1651,26 +1658,26 @@ Expected: client shows the JustMemory MCP server as connected and can call `memo
 
 Alpha Slice 1 is complete when:
 
-- `npm run build` succeeds.
-- `npm test` succeeds.
-- `npm run typecheck` succeeds.
-- `justmemory mcp` starts a stdio MCP server.
-- `memory_capabilities` returns local-only capabilities and `requires_login=false`.
-- `memory_health` returns local storage health.
-- `memory_explain_setup` explains the local no-login setup.
-- `memory_profiles_list`, `memory_profile_current`, and `memory_profile_select` work for local profiles.
-- `memory_remember` stores an active local memory.
-- `memory_get` reads that memory by ID.
-- `memory_recall` finds that memory using lexical/metadata recall.
-- Memories and profiles survive process restart through local LanceDB storage.
+- [x] `npm run build` succeeds.
+- [x] `npm test` succeeds.
+- [x] `npm run typecheck` succeeds.
+- [x] `justmemory mcp` starts a stdio MCP server.
+- [x] `memory_capabilities` returns local-only capabilities and `requires_login=false`.
+- [x] `memory_health` returns local storage health.
+- [x] `memory_explain_setup` explains the local no-login setup.
+- [x] `memory_profiles_list`, `memory_profile_current`, and `memory_profile_select` work for local profiles.
+- [x] `memory_remember` stores an active local memory.
+- [x] `memory_get` reads that memory by ID.
+- [x] `memory_recall` finds that memory using lexical/metadata recall.
+- [x] Memories and profiles survive process restart through local LanceDB storage.
 
 ---
 
 ## Review Checklist
 
-- [ ] The implementation does not introduce hosted auth, remote sync, billing, or admin UI code.
-- [ ] The implementation does not require Docker, Python, Ollama, or external services.
-- [ ] The implementation does not add embeddings yet.
-- [ ] Every tool response uses the standard response envelope.
-- [ ] All stable error codes are actionable.
-- [ ] The MCP config path remains compatible with the documented `npx -y justmemory mcp` shape.
+- [x] The implementation does not introduce hosted auth, remote sync, billing, or admin UI code.
+- [x] The implementation does not require Docker, Python, Ollama, or external services.
+- [x] The implementation does not add embeddings yet.
+- [x] Every tool response uses the standard response envelope.
+- [x] All stable error codes are actionable.
+- [x] The MCP config path remains compatible with the documented `npx -y justmemory mcp` shape.

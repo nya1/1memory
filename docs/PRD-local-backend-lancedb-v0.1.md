@@ -7,6 +7,8 @@
 **Audience:** Backend engineering, MCP implementers, agent harness authors  
 **Related docs:** `VISION.md`, `docs/PRD-company-wide-agent-memory-v1.1.md`, `docs/MCP-facing-agent-contract.md`
 
+**Implementation status (2026-04-27):** Alpha Slice 1 plus major parts of Phases 2, 4, and 7 are implemented in-repo as the `justmemory` package (`npm run build` / `justmemory mcp`): MCP tools for capabilities, health, setup explanation, profiles, remember/get/**list**/recall, session start/end, and ingest status; MCP prompts (`start_coding_session`, `recall_context`, `session_handoff`); behavioral tool descriptions; implicit session creation for recall/remember paths when explicit session start is not called; profiles and memories persisted under `JUSTMEMORY_HOME` (default `~/.justmemory`) in LanceDB; serialized writes via a DB mutex; append-only **audit** rows for selected tools; idempotent startup migrations tracked in LanceDB (`schema_migrations`) with `last_applied_migration_id` / `store_schema_version` mirrored into `config.json`; and installer foundations via `justmemory mcp install <client>` for Cursor, Claude Code, Claude Desktop snippet output, and generic MCP config generation.
+
 ---
 
 ## 1) Product Summary
@@ -782,6 +784,7 @@ Must return `ok=true` when the MCP server can read the local database and resolv
 ### `memory_session_start`
 
 Must create or resume a local session record and return a compact context block for the resolved profile.
+`memory_session_start` is recommended but not required for functional memory use: `memory_recall` and `memory_remember` should still work when explicit session start is skipped by creating or reusing an implicit session scoped to profile/workspace context.
 
 ### `memory_session_end`
 
@@ -919,7 +922,7 @@ The local backend v0.1 is complete when:
 
 - Whether source message retention is enabled by default or only for explicit session handoff artifacts.
 - Whether task memories should be included in default recall or only in `memory_context(focus=task)`.
-- Whether `memory_session_start` should always create a session record or only after the first write.
+- Resolved in implementation: `memory_session_start` remains explicit, but recall/remember may create implicit sessions so memory use does not depend on a startup hook.
 - Which MCP clients are officially supported first beyond Cursor.
 
 ---
