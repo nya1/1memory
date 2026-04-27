@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "description": "Synthetic retrieval tasks: one gold memory per case among distractors, with paraphrased queries (LoCoMo / long-mem-eval style, local-only).",
+  "cases": [
+    {
+      "id": "handoff-retry-overlap",
+      "gold_index": 6,
+      "memories": [
+        { "content": "The CI matrix runs Node 20 and Node 22 on ubuntu-latest.", "memory_type": "fact" },
+        { "content": "Flaky tests were quarantined in the e2e suite last sprint.", "memory_type": "event" },
+        { "content": "When editing the installer, run MCP integration tests before claiming done.", "memory_type": "instruction" },
+        { "content": "The replay job stores offsets in LanceDB under the memories table.", "memory_type": "fact" },
+        { "content": "Provider retries are capped at three attempts with exponential backoff.", "memory_type": "fact" },
+        { "content": "The staging cluster uses a separate JUSTMEMORY_HOME for dogfood runs.", "memory_type": "fact" },
+        {
+          "content": "The retry bug only reproduces when provider retries overlap with the replay job.",
+          "memory_type": "fact"
+        },
+        { "content": "Release notes for 0.0.1 mention local ONNX embeddings only.", "memory_type": "fact" },
+        { "content": "The explore TUI uses ink and React 18.", "memory_type": "fact" }
+      ],
+      "queries": [
+        "When does the flaky retry issue show up relative to replay?",
+        "overlap between replay job and provider retries",
+        "Does the retry bug need both retries and replay?"
+      ]
+    },
+    {
+      "id": "mcp-stdio-instruction",
+      "gold_index": 3,
+      "memories": [
+        { "content": "HTTP transports for MCP exist but are not the default for this repo.", "memory_type": "fact" },
+        { "content": "Claude Desktop expects JSON-RPC over stdio for MCP servers.", "memory_type": "fact" },
+        { "content": "Workspace-scoped install writes under .cursor when requested.", "memory_type": "fact" },
+        {
+          "content": "Use MCP stdio for local JustMemory clients; avoid background daemons.",
+          "memory_type": "instruction"
+        },
+        { "content": "The CLI entrypoint is dist/cli.js after build.", "memory_type": "fact" },
+        { "content": "Profiles map workspace paths to profile_id rows.", "memory_type": "fact" },
+        { "content": "Audit events record memory_recall with candidate counts.", "memory_type": "fact" }
+      ],
+      "queries": [
+        "How should editors talk to JustMemory on this machine?",
+        "stdio versus HTTP for the memory MCP server",
+        "local agent connection transport preference"
+      ]
+    },
+    {
+      "id": "ingest-resume-semantics",
+      "gold_index": 5,
+      "memories": [
+        { "content": "Ingest batches default to 32 rows per transaction.", "memory_type": "fact" },
+        { "content": "Embedding download runs in pretest via download-embedding-model.mjs.", "memory_type": "fact" },
+        { "content": "Vector search filters on indexing_state ready and status active.", "memory_type": "fact" },
+        { "content": "Lexical recall tokenizes on alphanumeric chunks of length two or more.", "memory_type": "fact" },
+        { "content": "Session handoff writes task memories with open verification items.", "memory_type": "instruction" },
+        {
+          "content": "Verify whether async ingest resumes after MCP restart; not confirmed yet.",
+          "memory_type": "task"
+        },
+        { "content": "LanceDB migrations assert store writes before mutating schema.", "memory_type": "fact" },
+        { "content": "Redaction state defaults to none for new memories.", "memory_type": "fact" }
+      ],
+      "queries": [
+        "What is still unknown about ingest after a restart?",
+        "async ingest MCP restart verification",
+        "open question on pipeline resume"
+      ]
+    },
+    {
+      "id": "prefs-among-noise",
+      "gold_index": 4,
+      "memories": [
+        { "content": "User prefers dark mode in the IDE theme.", "memory_type": "fact" },
+        { "content": "User prefers 2-space indentation in TypeScript.", "memory_type": "fact" },
+        { "content": "User prefers pnpm over npm for this monorepo.", "memory_type": "fact" },
+        { "content": "User prefers running vitest with fileParallelism disabled.", "memory_type": "fact" },
+        { "content": "User prefers vim-style modal editing and hjkl navigation in editors.", "memory_type": "fact" },
+        { "content": "User prefers zsh as the default shell on Linux workstations.", "memory_type": "fact" },
+        { "content": "User prefers English for commit messages and PR titles.", "memory_type": "fact" },
+        { "content": "User prefers conventional commits with chore and feat prefixes.", "memory_type": "fact" }
+      ],
+      "queries": [
+        "What editing style does the user want in the editor?",
+        "modal keybindings preference",
+        "hjkl navigation habit"
+      ]
+    },
+    {
+      "id": "timezone-ruled-out",
+      "gold_index": 2,
+      "memories": [
+        { "content": "Monday standup moved to 10:00 UTC for the memory workstream.", "memory_type": "event" },
+        { "content": "Tuesday spike focused on LanceDB vector column distances.", "memory_type": "event" },
+        {
+          "content": "On Monday the investigation ruled out timezone parsing as the root cause.",
+          "memory_type": "event"
+        },
+        { "content": "Wednesday review covered recall fusion weights.", "memory_type": "event" },
+        { "content": "Thursday patch adjusted lexical versus vector blend constants.", "memory_type": "event" },
+        { "content": "Friday demo highlighted citation IDs inside context blocks.", "memory_type": "event" }
+      ],
+      "queries": [
+        "What did we conclude about time zones in the bug hunt?",
+        "was tz parsing the culprit Monday",
+        "timezone ruled out investigation"
+      ]
+    },
+    {
+      "id": "dense-shared-vocabulary",
+      "gold_index": 7,
+      "memories": [
+        { "content": "Memory recall merges lexical scores with vector distance when embeddings exist.", "memory_type": "fact" },
+        { "content": "Memory recall orders candidates by combined lexical and vector signals.", "memory_type": "fact" },
+        { "content": "Memory recall adds a small boost when memory_type is instruction.", "memory_type": "fact" },
+        { "content": "Memory recall uses topic_key overlap when present on records.", "memory_type": "fact" },
+        { "content": "Memory recall returns candidate_ids aligned with merged ranking.", "memory_type": "fact" },
+        { "content": "Memory recall exposes retrieval_channels_used for debugging.", "memory_type": "fact" },
+        { "content": "Memory recall surfaces why_retrieved strings for transparency.", "memory_type": "fact" },
+        {
+          "content": "Memory recall applies recency boost using updated_at age in days.",
+          "memory_type": "fact"
+        }
+      ],
+      "queries": [
+        "Which signal uses updated_at age for ranking memories?",
+        "recency boost from updated_at field",
+        "how does freshness enter merged recall scoring"
+      ]
+    }
+  ]
+}
