@@ -4,7 +4,7 @@ A local memory layer for coding agents.
 
 1memory runs as an MCP server on your machine. Agents can write down what matters, recall it later, and carry useful context across sessions without a hosted service. Semantic recall uses vector search with a local ONNX embedding model (`paraphrase-MiniLM-L3-v2`) published on npm with the package, so it is always available offline.
 
-**Synthetic recall benchmark:** ~83% recall@1
+**LongMemEval benchmark**: 78% recall@1, 96% recall@8
 
 It is built for local-first agent work:
 
@@ -223,30 +223,7 @@ pnpm run dev:mcp
 
 ## Benchmark
 
-Retrieval benchmark (synthetic corpus in `benchmark/scenarios.json`; requires the local embedding model, same as tests). Metrics vary by machine and load.
-
-```bash
-pnpm run benchmark:retrieval
-```
-
-Example output:
-
-```text
-1memory retrieval benchmark (synthetic corpus, local embeddings)
-cases=6 queries=18 limit=8
-recall@1     83.3%
-recall@8 100.0%
-MRR          0.903
-mean latency 24.84 ms
-  - handoff-retry-overlap: @1 100% @8 100% mrr 1.00 (9 mem, 3 q)
-  - mcp-stdio-instruction: @1 67% @8 100% mrr 0.83 (7 mem, 3 q)
-  - ingest-resume-semantics: @1 67% @8 100% mrr 0.75 (8 mem, 3 q)
-  - prefs-among-noise: @1 100% @8 100% mrr 1.00 (8 mem, 3 q)
-  - timezone-ruled-out: @1 100% @8 100% mrr 1.00 (6 mem, 3 q)
-  - dense-shared-vocabulary: @1 67% @8 100% mrr 0.83 (8 mem, 3 q)
-```
-
-Use `pnpm run benchmark:retrieval -- --json` for machine-readable results.
+Benchmark commands and suite details are documented in `BENCHMARKS.md`.
 
 ## CI and releases
 

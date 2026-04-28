@@ -4,3 +4,4 @@ dist/
 
 # Downloaded ONNX + tokenizer (see `pnpm run setup:embeddings`; included in published tarball via prepublishOnly).
 models/
+benchmark/datasets/

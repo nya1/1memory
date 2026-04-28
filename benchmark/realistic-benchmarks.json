@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "description": "Reference benchmark suites for evaluating long-term memory systems with realistic multi-session histories.",
+  "updated_at": "2026-04-28",
+  "suites": [
+    {
+      "id": "locomo",
+      "name": "LoCoMo",
+      "source_url": "https://github.com/snap-research/locomo",
+      "paper_url": "https://arxiv.org/abs/2402.17753",
+      "focus": "Very long-term conversational memory (QA, event summarization)",
+      "token_scale": "≈9K tokens per conversation average",
+      "status": "planned",
+      "results": {
+        "accuracy": null,
+        "recall_at_1": null,
+        "mrr": null,
+        "latency_p50_ms": null,
+        "tokens_processed": null
+      }
+    },
+    {
+      "id": "longmemeval-s",
+      "name": "LongMemEval_S",
+      "source_url": "https://github.com/xiaowu0162/LongMemEval",
+      "paper_url": "https://arxiv.org/abs/2410.10813",
+      "focus": "Long-term interactive memory over 500 QA instances",
+      "token_scale": "≈115K tokens (~40 sessions) per question history",
+      "status": "planned",
+      "results": {
+        "accuracy": null,
+        "recall_at_1": null,
+        "mrr": null,
+        "latency_p50_ms": null,
+        "tokens_processed": null
+      }
+    },
+    {
+      "id": "beam-1m",
+      "name": "BEAM (1M)",
+      "source_url": "https://github.com/mohammadtavakoli78/BEAM",
+      "paper_url": "https://arxiv.org/abs/2510.27246",
+      "focus": "Multi-domain long-term memory probing at million-token scale",
+      "token_scale": "1M tokens (35 chats in official split)",
+      "status": "planned",
+      "results": {
+        "accuracy": null,
+        "recall_at_1": null,
+        "mrr": null,
+        "latency_p50_ms": null,
+        "tokens_processed": null
+      }
+    },
+    {
+      "id": "beam-10m",
+      "name": "BEAM (10M)",
+      "source_url": "https://github.com/mohammadtavakoli78/BEAM",
+      "paper_url": "https://arxiv.org/abs/2510.27246",
+      "focus": "Memory under ultra-long context where full-context prompting is infeasible",
+      "token_scale": "10M tokens (10 chats in official split)",
+      "status": "planned",
+      "results": {
+        "accuracy": null,
+        "recall_at_1": null,
+        "mrr": null,
+        "latency_p50_ms": null,
+        "tokens_processed": null
+      }
+    }
+  ]
+}

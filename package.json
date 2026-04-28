@@ -18,12 +18,18 @@
     "predev:mcp": "node scripts/download-embedding-model.mjs",
     "pretest": "node scripts/download-embedding-model.mjs",
     "prebenchmark:retrieval": "node scripts/download-embedding-model.mjs",
+    "prebenchmark:locomo": "node scripts/download-embedding-model.mjs",
+    "prebenchmark:longmemeval": "node scripts/download-embedding-model.mjs",
+    "benchmark:locomo:download": "mkdir -p benchmark/datasets && curl -L \"https://raw.githubusercontent.com/snap-research/locomo/main/data/locomo10.json\" -o \"benchmark/datasets/locomo10.json\"",
+    "benchmark:longmemeval:download": "mkdir -p benchmark/datasets && curl -L \"https://huggingface.co/datasets/xiaowu0162/longmemeval-cleaned/resolve/main/longmemeval_s_cleaned.json\" -o \"benchmark/datasets/longmemeval_s_cleaned.json\"",
     "dev:mcp": "tsx src/cli.ts mcp",
     "dev:explore": "tsx src/cli.ts explore",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "benchmark:retrieval": "tsx benchmark/run.ts"
+    "benchmark:retrieval": "tsx benchmark/run.ts",
+    "benchmark:locomo": "tsx benchmark/locomo.ts",
+    "benchmark:longmemeval": "tsx benchmark/longmemeval.ts"
   },
   "engines": {
     "node": ">=20"
